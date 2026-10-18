@@ -1,0 +1,20 @@
+-- Created after bulk load. Every foreign key gets an index, plus a few common access paths.
+CREATE INDEX ON categories (parent_id);
+CREATE INDEX ON suppliers (country_id);
+CREATE INDEX ON products (category_id);
+CREATE INDEX ON products (supplier_id);
+CREATE INDEX ON customers (country_id);
+CREATE INDEX ON customers (referred_by);
+CREATE INDEX ON employees (department_id);
+CREATE INDEX ON employees (manager_id);
+CREATE INDEX ON orders (customer_id);
+CREATE INDEX ON orders (sales_rep_id);
+CREATE INDEX ON orders (ordered_at);
+CREATE INDEX ON orders (ship_country_id);
+CREATE INDEX ON order_items (product_id);
+CREATE INDEX ON payments (order_id);
+CREATE INDEX ON shipments (order_id);
+CREATE INDEX ON returns (order_item_id);
+CREATE INDEX ON reviews (product_id);
+CREATE INDEX ON reviews (customer_id);
+CREATE INDEX ON user_logins (customer_id, logged_in_at);
