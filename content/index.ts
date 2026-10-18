@@ -17,8 +17,12 @@ import t14 from './topics/14-aggregate-functions.ts';
 import t15 from './topics/15-window-basics.ts';
 import t16 from './topics/16-window-aggregate.ts';
 import t17 from './topics/17-window-ranking.ts';
+import t18 from './topics/18-window-value.ts';
+import t19 from './topics/19-subqueries.ts';
+import t20 from './topics/20-cte.ts';
+import t21 from './topics/21-views.ts';
 
-export const TOPIC_CONTENT: Topic[] = [t01, t02, t03, t04, t05, t06, t07, t08, t09, t10, t11, t12, t13, t14, t15, t16, t17];
+export const TOPIC_CONTENT: Topic[] = [t01, t02, t03, t04, t05, t06, t07, t08, t09, t10, t11, t12, t13, t14, t15, t16, t17, t18, t19, t20, t21];
 
 const byId = new Map(TOPIC_CONTENT.map((t) => [t.id, t]));
 export const topicContent = (id: number): Topic | undefined => byId.get(id);
