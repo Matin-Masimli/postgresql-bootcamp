@@ -47,6 +47,11 @@ export default function QuestionRunner({ question, mode = 'practice', onExamSubm
           {question.relatedTopics.length > 0 && (
             <span>· also uses {question.relatedTopics.map((t) => TOPICS.find((x) => x.id === t)?.title ?? t).join(', ')}</span>
           )}
+          {question.previewTopics?.length ? (
+            <span title="This question needs a basic pattern from a later topic. The topic explanation shows it.">
+              · previews {question.previewTopics.map((t) => TOPICS.find((x) => x.id === t)?.title ?? t).join(', ')}
+            </span>
+          ) : null}
         </div>
         <h1 className="text-xl font-semibold tracking-tight">{question.title}</h1>
         {mode === 'practice' && topicTitle && <p className="text-xs text-zinc-500">Topic {question.topic}: {topicTitle}</p>}

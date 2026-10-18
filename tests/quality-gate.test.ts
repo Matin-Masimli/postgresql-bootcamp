@@ -47,6 +47,7 @@ describe('content structure', () => {
     for (const q of TOPIC_CONTENT.flatMap((t) => t.questions)) {
       expect(new Set(q.relatedTopics).size, `${q.id}: duplicate related topics`).toBe(q.relatedTopics.length);
       for (const r of q.relatedTopics) expect(r < q.topic, `${q.id}: related topic ${r} is not earlier than ${q.topic}`).toBe(true);
+      for (const r of q.previewTopics ?? []) expect(r > q.topic, `${q.id}: preview topic ${r} should be a later topic (use relatedTopics for earlier ones)`).toBe(true);
     }
   });
 
@@ -59,6 +60,18 @@ describe('content structure', () => {
       expect(t.explanation.length, `topic ${t.id} explanation`).toBeGreaterThan(500);
       const types = new Set(t.questions.map((q) => q.type));
       expect(types.has('write-query'), `topic ${t.id} needs write-query questions`).toBe(true);
+    }
+  });
+
+  it('runnable examples in explanations work (blocks starting with "-- ERROR" must fail)', async () => {
+    for (const t of TOPIC_CONTENT) {
+      for (const m of t.explanation.matchAll(/```sql\n([\s\S]*?)```/g)) {
+        const sql = m[1];
+        const expectError = /^\s*-- ERROR/.test(sql);
+        const { output } = await sessions.main.runSandboxed(sql);
+        if (expectError) expect(output.error, `topic ${t.id}: example marked -- ERROR ran fine:\n${sql}`).toBeTruthy();
+        else expect(output.error?.message, `topic ${t.id}: example failed:\n${sql}`).toBeUndefined();
+      }
     }
   });
 

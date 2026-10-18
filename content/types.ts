@@ -29,6 +29,11 @@ const Base = z.object({
   topic: z.number().int().min(1).max(21),
   /** Earlier topics this question also relies on. */
   relatedTopics: z.array(z.number().int().min(1).max(21)),
+  /**
+   * Later topics whose basic pattern the question needs (e.g. wrapping a window query in a
+   * subquery/CTE to filter on its result). The topic explanation must teach that pattern.
+   */
+  previewTopics: z.array(z.number().int().min(1).max(21)).optional(),
   difficulty: Difficulty,
   title: z.string().min(3),
   /** Markdown. Must state exact columns, column order, sorting, rounding and tie-breaking. */
