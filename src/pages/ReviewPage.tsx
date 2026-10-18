@@ -61,7 +61,7 @@ export default function ReviewPage() {
 
   return (
     <div className="max-w-2xl space-y-4">
-      <h1 className="text-2xl font-semibold tracking-tight">Mixed review</h1>
+      <h1 className="text-3xl font-semibold tracking-tight">Mixed review</h1>
       <p className="text-zinc-600 dark:text-zinc-400">
         Up to {SIZE} random questions from the topics you've completed (at least half of their questions solved). Questions you haven't solved yet come first.
       </p>
@@ -72,7 +72,7 @@ export default function ReviewPage() {
       ) : (
         <>
           <p className="text-sm">Drawing from: {topics.map((t) => TOPICS.find((x) => x.id === t.id)?.title).join(', ')}.</p>
-          <button type="button" onClick={start} className="rounded-md bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-700">Start review</button>
+          <button type="button" onClick={start} className="btn-primary px-4 py-2">Start review</button>
         </>
       )}
     </div>

@@ -5,6 +5,7 @@ import { Prec } from '@codemirror/state';
 import { EditorView, keymap } from '@codemirror/view';
 import { setDiagnostics } from '@codemirror/lint';
 import { useManifest } from '../lib/manifest.ts';
+import { darkEditorTheme, lightEditorTheme } from '../lib/editorTheme.ts';
 import { useDarkMode } from '../lib/useDarkMode.ts';
 
 export interface EditorError { offset: number; message: string }
@@ -61,12 +62,12 @@ export default function SqlEditor({ value, onChange, onRun, error, readOnly, min
   }, [error]);
 
   return (
-    <div className="overflow-hidden rounded-md border border-zinc-300 text-[14px] dark:border-zinc-700">
+    <div className="overflow-hidden rounded-xl border border-zinc-300 bg-white shadow-sm transition focus-within:border-sky-500 focus-within:ring-4 focus-within:ring-sky-500/15 dark:border-zinc-700/80 dark:bg-zinc-950/70 dark:shadow-inner dark:shadow-black/30">
       <CodeMirror
         value={value}
         onChange={onChange}
         readOnly={readOnly}
-        theme={dark ? 'dark' : 'light'}
+        theme={dark ? darkEditorTheme : lightEditorTheme}
         extensions={extensions}
         minHeight={minHeight}
         maxHeight="60vh"

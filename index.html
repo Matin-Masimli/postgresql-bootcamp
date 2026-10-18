@@ -3,15 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="color-scheme" content="light dark" />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="theme-color" content="#0a0d16" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%228%22 fill=%22%232563f0%22/%3E%3Cpath d=%22M9 11c0-2 3-3.5 7-3.5s7 1.5 7 3.5v10c0 2-3 3.5-7 3.5s-7-1.5-7-3.5z%22 fill=%22none%22 stroke=%22white%22 stroke-width=%222%22/%3E%3Cpath d=%22M9 11c0 2 3 3.5 7 3.5s7-1.5 7-3.5M9 16c0 2 3 3.5 7 3.5s7-1.5 7-3.5%22 fill=%22none%22 stroke=%22white%22 stroke-width=%222%22/%3E%3C/svg%3E" />
     <title>PostgreSQL Bootcamp</title>
     <script>
-      // Apply the saved theme before first paint to avoid a flash.
+      // Apply the saved theme before first paint to avoid a flash. Dark is the default look.
+      let dark = true;
       try {
-        const t = localStorage.getItem('pgb.theme');
-        const dark = t ? t === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
-        document.documentElement.classList.toggle('dark', dark);
+        dark = localStorage.getItem('pgb.theme') !== 'light';
       } catch {}
+      document.documentElement.classList.toggle('dark', dark);
     </script>
   </head>
   <body>

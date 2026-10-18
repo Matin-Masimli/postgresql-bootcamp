@@ -34,7 +34,7 @@ export default function ProgressPage() {
 
   return (
     <div className="max-w-3xl space-y-6">
-      <h1 className="text-2xl font-semibold tracking-tight">Progress</h1>
+      <h1 className="text-3xl font-semibold tracking-tight">Progress</h1>
       <dl className="grid grid-cols-3 gap-3">
         {[['Solved', `${solved}/${total}`], ['Attempted', attempted], ['Day streak', currentStreak(p.activeDays)]].map(([k, v]) => (
           <div key={k} className="rounded-lg border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900">
@@ -69,12 +69,12 @@ export default function ProgressPage() {
           Progress is stored in this browser only. Export it as a JSON file, then import that file on your other device. Drafts of your SQL are included.
         </p>
         <div className="flex flex-wrap items-center gap-2">
-          <button type="button" onClick={exportFile} className="rounded-md bg-sky-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-sky-700">Export progress</button>
+          <button type="button" onClick={exportFile} className="btn-primary">Export progress</button>
           <select value={mode} onChange={(e) => setMode(e.target.value as 'merge' | 'replace')} aria-label="Import mode" className="rounded-md border border-zinc-300 bg-white px-2 py-1.5 text-sm dark:border-zinc-700 dark:bg-zinc-900">
             <option value="merge">Import: merge (keep the best of both)</option>
             <option value="replace">Import: replace this device's progress</option>
           </select>
-          <button type="button" onClick={() => fileRef.current?.click()} className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800">Import file…</button>
+          <button type="button" onClick={() => fileRef.current?.click()} className="btn-secondary">Import file…</button>
           <input ref={fileRef} type="file" accept="application/json,.json" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) void importFile(f); e.target.value = ''; }} />
         </div>
         {message && <p className={`text-sm ${message.ok ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-700 dark:text-red-400'}`}>{message.text}</p>}

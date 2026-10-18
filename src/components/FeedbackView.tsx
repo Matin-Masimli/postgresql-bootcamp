@@ -6,14 +6,14 @@ export default function FeedbackView({ feedback, sql }: { feedback: Feedback; sq
   const f = feedback;
   if (f.pass) {
     return (
-      <div role="status" className="rounded-md border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200">
+      <div role="status" className="rounded-xl border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm text-emerald-900 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200">
         <p className="font-semibold">✓ {f.summary}</p>
       </div>
     );
   }
   const cols = f.expectedColumns ?? [];
   return (
-    <div role="status" className="space-y-3 rounded-md border border-amber-300 bg-amber-50 px-3 py-3 text-sm text-amber-950 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-100">
+    <div role="status" className="space-y-3 rounded-xl border border-amber-300 bg-amber-50 px-3 py-3 text-sm text-amber-950 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-100">
       <p className="font-semibold">✗ Not quite. {f.summary}</p>
       {f.error && <ErrorBox error={f.error} sql={f.dataset === 'main' ? sql : undefined} />}
       {f.kind === 'columns' && f.expectedColumns && f.actualColumns && (

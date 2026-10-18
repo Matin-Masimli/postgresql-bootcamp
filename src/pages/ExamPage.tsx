@@ -66,7 +66,7 @@ export default function ExamPage() {
     const hard = ALL_QUESTIONS.filter((q) => q.difficulty === 'hard' || q.difficulty === 'interview').length;
     return (
       <div className="max-w-2xl space-y-4">
-        <h1 className="text-2xl font-semibold tracking-tight">Final exam</h1>
+        <h1 className="text-3xl font-semibold tracking-tight">Final exam</h1>
         <p className="text-zinc-600 dark:text-zinc-400">
           A timed, mixed exam drawn from all topics, interview and hard questions first. No hints and no solutions during the exam.
           Answers are graded silently, and you see your score at the end. You can resubmit an answer until time runs out.
@@ -79,7 +79,7 @@ export default function ExamPage() {
           <label className="text-sm">Minutes<br />
             <input type="number" min={1} max={240} value={minutes} onChange={(e) => setMinutes(Number(e.target.value))} className="mt-1 w-24 rounded-md border border-zinc-300 bg-white px-2 py-1 dark:border-zinc-700 dark:bg-zinc-900" />
           </label>
-          <button type="button" disabled={available === 0} onClick={() => save({ ids: pickQuestions(Math.min(count, available)), index: 0, startedAt: Date.now(), minutes, answers: {} })} className="rounded-md bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-700 disabled:opacity-50">
+          <button type="button" disabled={available === 0} onClick={() => save({ ids: pickQuestions(Math.min(count, available)), index: 0, startedAt: Date.now(), minutes, answers: {} })} className="btn-primary px-4 py-2">
             Start exam
           </button>
         </div>
@@ -104,7 +104,7 @@ export default function ExamPage() {
     const ok = exam.ids.filter((id) => exam.answers[id]).length;
     return (
       <div className="max-w-2xl space-y-4">
-        <h1 className="text-2xl font-semibold tracking-tight">Exam result: {ok}/{exam.ids.length} ({Math.round((ok / exam.ids.length) * 100)}%)</h1>
+        <h1 className="text-3xl font-semibold tracking-tight">Exam result: {ok}/{exam.ids.length} ({Math.round((ok / exam.ids.length) * 100)}%)</h1>
         <ul className="divide-y divide-zinc-100 rounded-lg border border-zinc-200 bg-white dark:divide-zinc-800 dark:border-zinc-800 dark:bg-zinc-900">
           {exam.ids.map((id, i) => {
             const q = getQuestion(id)!;
@@ -119,7 +119,7 @@ export default function ExamPage() {
             );
           })}
         </ul>
-        <button type="button" onClick={() => save(null)} className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm dark:border-zinc-700">New exam</button>
+        <button type="button" onClick={() => save(null)} className="btn-secondary">New exam</button>
       </div>
     );
   }

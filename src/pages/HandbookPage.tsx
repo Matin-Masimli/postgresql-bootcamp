@@ -18,7 +18,7 @@ export default function HandbookPage() {
     <div className="mx-auto max-w-3xl space-y-8">
       <header>
         <p className="text-sm text-zinc-500"><Link to="/" className="hover:underline">Topics</Link> / <Link to={`/topic/${slug}`} className="hover:underline">{meta.title}</Link></p>
-        <h1 className="text-2xl font-semibold tracking-tight">Solution handbook: {meta.title}</h1>
+        <h1 className="text-3xl font-semibold tracking-tight">Solution handbook: {meta.title}</h1>
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">Spoiler warning: this page contains every answer. Try the questions first.</p>
         <ol className="mt-3 list-decimal space-y-0.5 pl-5 text-sm">
           {content.questions.map((q) => <li key={q.id}><a href={`#${q.id}`} onClick={(e) => { e.preventDefault(); document.getElementById(q.id)?.scrollIntoView({ behavior: 'smooth' }); }} className="hover:underline">{q.title}</a></li>)}

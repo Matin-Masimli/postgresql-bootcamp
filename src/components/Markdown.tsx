@@ -28,7 +28,7 @@ function RunnableSql({ code }: { code: string }) {
           type="button"
           onClick={run}
           disabled={busy}
-          className="absolute top-1.5 right-1.5 rounded bg-sky-600 px-2 py-0.5 text-xs font-medium text-white hover:bg-sky-700 disabled:opacity-50"
+          className="btn-primary absolute top-2 right-2 rounded-md px-2 py-0.5 text-xs"
         >
           {busy ? 'Running…' : output ? 'Run again' : '▶ Run'}
         </button>

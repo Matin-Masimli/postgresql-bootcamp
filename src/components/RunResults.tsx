@@ -14,7 +14,7 @@ export function ErrorBox({ error, sql, title }: { error: SqlError; sql?: string;
   // SQLSTATE codes are 5 characters; anything else (timeouts, sandbox rules) didn't come from PostgreSQL.
   title ??= error.code && /^[0-9A-Z]{5}$/.test(error.code) ? 'PostgreSQL error' : error.code === 'TIMEOUT' ? 'Query stopped' : 'Cannot run this';
   return (
-    <div className="rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-900 dark:border-red-800 dark:bg-red-950/40 dark:text-red-200">
+    <div className="rounded-xl border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-900 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200">
       <p className="font-medium">
         {title}
         {error.code && /^[0-9A-Z]{5}$/.test(error.code) && <span className="ml-2 font-mono text-xs opacity-70">SQLSTATE {error.code}</span>}

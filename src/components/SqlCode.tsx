@@ -18,7 +18,7 @@ export default function SqlCode({ code, className = '' }: { code: string; classN
     return out;
   }, [code]);
   return (
-    <pre className={`sql-code overflow-x-auto rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-[13px] leading-relaxed dark:border-zinc-800 dark:bg-zinc-900 ${className}`}>
+    <pre className={`sql-code overflow-x-auto rounded-xl border border-zinc-200 bg-zinc-50/80 px-4 py-3 text-[13px] leading-relaxed dark:border-zinc-800 dark:bg-zinc-950/60 ${className}`}>
       <code>{nodes}</code>
     </pre>
   );

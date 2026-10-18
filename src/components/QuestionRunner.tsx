@@ -4,10 +4,12 @@ import { isQueryQuestion, type ConceptQuestion, type PredictQuestion, type Quest
 import { TOPICS } from '../../content/topicList.ts';
 import { engine, runError } from '../db/client.ts';
 import type { Feedback, RunOutput } from '../engine/types.ts';
+import { visualize, type Visualization } from '../lib/visualize.ts';
 import { progress, statusOf, useProgress } from '../progress/store.ts';
 import { DifficultyBadge, StatusIcon, TYPE_LABEL } from './Badges.tsx';
 import FeedbackView from './FeedbackView.tsx';
 import Markdown from './Markdown.tsx';
+import QueryVisualizer from './QueryVisualizer.tsx';
 import ResultTable from './ResultTable.tsx';
 import RunResults from './RunResults.tsx';
 import SchemaQuickRef from './SchemaQuickRef.tsx';
@@ -24,9 +26,9 @@ interface Props {
   nav?: ReactNode;
 }
 
-const btn = 'rounded-md px-3 py-1.5 text-sm font-medium disabled:opacity-50';
-const btnPrimary = `${btn} bg-sky-600 text-white hover:bg-sky-700`;
-const btnSecondary = `${btn} border border-zinc-300 bg-white hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800`;
+const btnPrimary = 'btn-primary';
+const btnSecondary = 'btn-secondary';
+const btnGhost = 'btn-ghost';
 
 export default function QuestionRunner({ question, mode = 'practice', onExamSubmit, examAnswered, nav }: Props) {
   const p = useProgress().questions[question.id];
@@ -38,10 +40,10 @@ export default function QuestionRunner({ question, mode = 'practice', onExamSubm
 
   return (
     <article className="space-y-4">
-      <header className="space-y-1">
+      <header className="space-y-2">
         <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
           {mode === 'practice' && <StatusIcon s={statusOf(p)} />}
-          <span className="font-mono">{question.id}</span>
+          <span className="chip">{question.id}</span>
           <DifficultyBadge d={question.difficulty} />
           <span>{TYPE_LABEL[question.type]}</span>
           {question.relatedTopics.length > 0 && (
@@ -53,8 +55,8 @@ export default function QuestionRunner({ question, mode = 'practice', onExamSubm
             </span>
           ) : null}
         </div>
-        <h1 className="text-xl font-semibold tracking-tight">{question.title}</h1>
-        {mode === 'practice' && topicTitle && <p className="text-xs text-zinc-500">Topic {question.topic}: {topicTitle}</p>}
+        <h1 className="text-3xl font-semibold tracking-tight">{question.title}</h1>
+        {mode === 'practice' && topicTitle && <p className="eyebrow">Topic {String(question.topic).padStart(2, '0')} · {topicTitle}</p>}
       </header>
       {isQueryQuestion(question) ? (
         <QueryRunner key={question.id} q={question} mode={mode} onExamSubmit={onExamSubmit} examAnswered={examAnswered} />
@@ -74,7 +76,9 @@ function QueryRunner({ q, mode, onExamSubmit, examAnswered }: { q: QueryQuestion
   const [sql, setSql] = useState(mode === 'practice' && saved?.draft ? saved.draft : initial);
   const [output, setOutput] = useState<RunOutput | null>(null);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
-  const [busy, setBusy] = useState<'run' | 'check' | null>(null);
+  const [busy, setBusy] = useState<'run' | 'check' | 'visualize' | null>(null);
+  const [viz, setViz] = useState<Visualization | null>(null);
+  const [view, setView] = useState<'result' | 'plan'>('result');
   const [hints, setHints] = useState(mode === 'practice' ? saved?.hintsUsed ?? 0 : 0);
   const [showSolution, setShowSolution] = useState(false);
   const [tab, setTab] = useState<'task' | 'sql' | 'result'>('task');
@@ -99,6 +103,19 @@ function QueryRunner({ q, mode, onExamSubmit, examAnswered }: { q: QueryQuestion
       setOutput({ statements: [], totalMs: 0, error: runError(e) });
     } finally {
       setBusy(null);
+      setView('result');
+      setTab('result');
+    }
+  };
+
+  const explain = async () => {
+    if (busy) return;
+    setBusy('visualize');
+    try {
+      setViz(await visualize(sql, 'main'));
+    } finally {
+      setBusy(null);
+      setView('plan');
       setTab('result');
     }
   };
@@ -116,6 +133,7 @@ function QueryRunner({ q, mode, onExamSubmit, examAnswered }: { q: QueryQuestion
       setFeedback({ pass: false, summary: 'The check could not finish.', kind: 'error', error: runError(e) });
     } finally {
       setBusy(null);
+      setView('result');
       setTab('result');
     }
   };
@@ -125,13 +143,13 @@ function QueryRunner({ q, mode, onExamSubmit, examAnswered }: { q: QueryQuestion
 
   const taskPanel = (
     <div className="space-y-4">
-      <Markdown>{q.prompt}</Markdown>
+      <div className="panel p-4 sm:p-5"><Markdown>{q.prompt}</Markdown></div>
       {mode === 'practice' && (
         <>
           {hints > 0 && (
             <ol className="space-y-2">
               {q.hints.slice(0, hints).map((h, i) => (
-                <li key={i} className="rounded-md border border-sky-200 bg-sky-50 px-3 py-2 text-sm dark:border-sky-900 dark:bg-sky-950/40">
+                <li key={i} className="rounded-xl border border-sky-200 bg-sky-50/80 px-3 py-2 text-sm dark:border-sky-500/20 dark:bg-sky-500/5">
                   <span className="mr-1 font-medium">Hint {i + 1}:</span>
                   <Markdown>{h}</Markdown>
                 </li>
@@ -172,13 +190,17 @@ function QueryRunner({ q, mode, onExamSubmit, examAnswered }: { q: QueryQuestion
         <button type="button" className={btnSecondary} onClick={run} disabled={!!busy} aria-label="Run" title="Run (Ctrl/Cmd + Enter)">
           {busy === 'run' ? 'Running…' : '▶ Run'}
         </button>
+        <button type="button" className="btn-visualize" onClick={explain} disabled={!!busy} title="Show how PostgreSQL executes this query">
+          {busy === 'visualize' ? 'Analyzing…' : '◈ Visualize'}
+        </button>
         <button type="button" className={btnPrimary} onClick={check} disabled={!!busy}>
           {busy === 'check' ? 'Checking…' : mode === 'exam' ? 'Submit answer' : '✓ Check'}
         </button>
-        <button type="button" className={`${btn} text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200`} onClick={() => { if (sql === initial || window.confirm('Reset the editor? Your current SQL will be lost.')) { setSql(initial); setOutput(null); setFeedback(null); } }}>
+        <button type="button" className={btnGhost} onClick={() => { if (sql === initial || window.confirm('Reset the editor? Your current SQL will be lost.')) { setSql(initial); setOutput(null); setFeedback(null); setViz(null); } }}>
           Reset
         </button>
-        <button type="button" className={`${btn} ml-auto text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200`} onClick={() => setSchemaOpen(!schemaOpen)} aria-expanded={schemaOpen}>
+        <span className="ml-auto hidden text-[11px] text-zinc-500 xl:inline"><span className="kbd">Ctrl</span> + <span className="kbd">Enter</span> runs</span>
+        <button type="button" className={btnGhost} onClick={() => setSchemaOpen(!schemaOpen)} aria-expanded={schemaOpen}>
           {schemaOpen ? 'Hide schema' : 'Schema'}
         </button>
       </div>
@@ -188,16 +210,32 @@ function QueryRunner({ q, mode, onExamSubmit, examAnswered }: { q: QueryQuestion
 
   const resultPanel = (
     <div className="space-y-3">
-      {busy && <p className="text-sm text-zinc-500">{busy === 'check' ? 'Checking against the reference on the practice data and the hidden data…' : 'Running…'}</p>}
+      {viz && (
+        <div className="inline-flex rounded-lg border border-zinc-200 bg-zinc-100/70 p-0.5 text-sm dark:border-zinc-800 dark:bg-zinc-900/70" role="tablist" aria-label="Result view">
+          {(['result', 'plan'] as const).map((v) => (
+            <button key={v} type="button" role="tab" aria-selected={view === v} onClick={() => setView(v)} className={`rounded-md px-3 py-1 transition ${view === v ? 'bg-white font-medium shadow-sm dark:bg-zinc-800' : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'}`}>
+              {v === 'result' ? 'Result' : '◈ Query plan'}
+            </button>
+          ))}
+        </div>
+      )}
+      {busy && <p className="flex items-center gap-2 text-sm text-zinc-500"><span className="size-2 animate-pulse rounded-full bg-sky-500" />{busy === 'check' ? 'Checking against the reference on the practice data and the hidden data…' : busy === 'visualize' ? 'Running EXPLAIN ANALYZE…' : 'Running…'}</p>}
+      {view === 'plan' && viz && !busy && <QueryVisualizer viz={viz} />}
+      {(view === 'result' || !viz) && <>
       {feedback && mode === 'practice' && <FeedbackView feedback={feedback} sql={sql} />}
       {feedback && mode === 'exam' && (
         feedback.kind === 'error' && feedback.error
           ? <FeedbackView feedback={{ ...feedback, summary: 'Your SQL failed with an error. Fix it and submit again.' }} sql={sql} />
-          : <p className="rounded-md border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700">Answer submitted. You can still change it and submit again until the exam ends.</p>
+          : <p className="rounded-xl border border-sky-300/60 bg-sky-50/70 px-3 py-2 text-sm dark:border-sky-500/30 dark:bg-sky-500/10">Answer submitted. You can still change it and submit again until the exam ends.</p>
       )}
       {mode === 'exam' && !feedback && examAnswered && <p className="text-sm text-zinc-500">You've already submitted an answer to this question.</p>}
       {output && <RunResults output={output} sql={sql} />}
-      {!output && !feedback && !busy && <p className="text-sm text-zinc-500">Results appear here. <strong>Run</strong> executes your SQL. <strong>Check</strong> grades it.</p>}
+      {!output && !feedback && !busy && (
+        <div className="rounded-xl border border-dashed border-zinc-300 px-4 py-6 text-center text-sm text-zinc-500 dark:border-zinc-700">
+          Results appear here. <strong className="text-zinc-700 dark:text-zinc-300">Run</strong> executes your SQL, <strong className="text-violet-600 dark:text-violet-300">Visualize</strong> shows how PostgreSQL runs it, and <strong className="text-sky-600 dark:text-sky-400">Check</strong> grades it.
+        </div>
+      )}
+      </>}
     </div>
   );
 
@@ -205,7 +243,7 @@ function QueryRunner({ q, mode, onExamSubmit, examAnswered }: { q: QueryQuestion
     <>
       <div className="flex gap-1 border-b border-zinc-200 lg:hidden dark:border-zinc-800" role="tablist">
         {(['task', 'sql', 'result'] as const).map((t) => (
-          <button key={t} type="button" role="tab" aria-selected={tab === t} onClick={() => setTab(t)} className={`-mb-px border-b-2 px-3 py-2 text-sm ${tab === t ? 'border-sky-600 font-medium' : 'border-transparent text-zinc-500'}`}>
+          <button key={t} type="button" role="tab" aria-selected={tab === t} onClick={() => setTab(t)} className={`-mb-px border-b-2 px-3 py-2 text-sm ${tab === t ? 'border-sky-500 font-medium text-sky-700 dark:text-sky-300' : 'border-transparent text-zinc-500'}`}>
             {t === 'task' ? 'Task' : t === 'sql' ? 'SQL' : feedback ? (feedback.pass ? 'Result ✓' : 'Result ✗') : 'Result'}
           </button>
         ))}
@@ -223,7 +261,7 @@ function QueryRunner({ q, mode, onExamSubmit, examAnswered }: { q: QueryQuestion
 
 function SolutionPanel({ q, onLoad }: { q: QueryQuestion; onLoad: (sql: string) => void }) {
   return (
-    <section className="space-y-3 rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+    <section className="panel space-y-3 p-4">
       <div className="flex items-center gap-2">
         <h2 className="font-semibold">Solution</h2>
         <button type="button" onClick={() => onLoad(q.referenceSolution)} className="ml-auto text-xs text-sky-700 hover:underline dark:text-sky-400">
@@ -273,7 +311,7 @@ function ChoiceRunner({ q, mode, onExamSubmit, examAnswered }: { q: PredictQuest
           return (
             <label
               key={i}
-              className={`flex cursor-pointer gap-3 rounded-md border p-3 ${state === 'correct' ? 'border-emerald-400 bg-emerald-50 dark:border-emerald-700 dark:bg-emerald-950/30' : state === 'wrong' ? 'border-red-300 bg-red-50 dark:border-red-800 dark:bg-red-950/30' : choice === i ? 'border-sky-500 bg-sky-50 dark:bg-sky-950/30' : 'border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900'}`}
+              className={`flex cursor-pointer gap-3 rounded-xl border p-3 transition ${state === 'correct' ? 'border-emerald-400 bg-emerald-50 dark:border-emerald-500/50 dark:bg-emerald-500/10' : state === 'wrong' ? 'border-red-300 bg-red-50 dark:border-red-500/40 dark:bg-red-500/10' : choice === i ? 'border-sky-500 bg-sky-50 ring-4 ring-sky-500/10 dark:bg-sky-500/10' : 'border-zinc-200 bg-white/70 hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900/50 dark:hover:border-zinc-700'}`}
             >
               <input type="radio" name={`opt-${q.id}`} aria-label={`Option ${String.fromCharCode(65 + i)}`} checked={choice === i} onChange={() => setChoice(i)} className="mt-1" disabled={reveal} />
               <span className="min-w-0 flex-1">
@@ -304,7 +342,7 @@ function ChoiceRunner({ q, mode, onExamSubmit, examAnswered }: { q: PredictQuest
       </div>
       {reveal && (
         <div className="space-y-3">
-          <p className={`rounded-md border px-3 py-2 text-sm font-semibold ${correct ? 'border-emerald-300 bg-emerald-50 text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200' : 'border-amber-300 bg-amber-50 text-amber-950 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-100'}`}>
+          <p className={`rounded-md border px-3 py-2 text-sm font-semibold ${correct ? 'border-emerald-300 bg-emerald-50 text-emerald-900 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200' : 'border-amber-300 bg-amber-50 text-amber-950 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-100'}`}>
             {correct ? '✓ Correct!' : `✗ Not quite. The answer is ${String.fromCharCode(65 + q.correctOption)}.`}
           </p>
           {output && <RunResults output={output} sql={q.type === 'predict-output' ? q.referenceSolution : ''} />}
@@ -330,7 +368,7 @@ function ChoiceHints({ q }: { q: PredictQuestion | ConceptQuestion }) {
   return (
     <div className="space-y-2">
       {q.hints.slice(0, n).map((h, i) => (
-        <div key={i} className="rounded-md border border-sky-200 bg-sky-50 px-3 py-2 text-sm dark:border-sky-900 dark:bg-sky-950/40">
+        <div key={i} className="rounded-xl border border-sky-200 bg-sky-50/80 px-3 py-2 text-sm dark:border-sky-500/20 dark:bg-sky-500/5">
           <span className="mr-1 font-medium">Hint {i + 1}:</span>
           <Markdown>{h}</Markdown>
         </div>

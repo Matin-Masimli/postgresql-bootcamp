@@ -57,7 +57,7 @@ export default function DiagnosticsPage() {
   return (
     <div className="space-y-5">
       <section>
-        <h1 className="text-2xl font-semibold tracking-tight">Diagnostics</h1>
+        <h1 className="text-3xl font-semibold tracking-tight">Diagnostics</h1>
         <p className="mt-1 max-w-2xl text-zinc-600 dark:text-zinc-400">
           Boots a fresh in-browser PostgreSQL from each prebuilt snapshot and times it. The first visit also downloads and
           compiles the PostgreSQL WebAssembly runtime (about 17 MB uncompressed). Later visits use the browser cache.
@@ -66,7 +66,7 @@ export default function DiagnosticsPage() {
           type="button"
           onClick={run}
           disabled={running}
-          className="mt-3 rounded-md bg-sky-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-sky-700 disabled:opacity-50"
+          className="btn-primary mt-3"
         >
           {running ? 'Measuring…' : 'Measure again'}
         </button>

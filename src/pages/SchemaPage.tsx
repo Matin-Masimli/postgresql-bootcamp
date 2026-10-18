@@ -22,13 +22,13 @@ export default function SchemaPage() {
   return (
     <div className="space-y-6">
       <section>
-        <h1 className="text-2xl font-semibold tracking-tight">Practice database</h1>
+        <h1 className="text-3xl font-semibold tracking-tight">Practice database</h1>
         <p className="mt-1 max-w-3xl text-zinc-600 dark:text-zinc-400">
           <strong className="font-medium text-zinc-800 dark:text-zinc-200">Atlas Mercantile</strong> is a fictional online retailer.
           It has {manifest.tables.length} tables and {totalRows.toLocaleString()} rows, running on PostgreSQL {manifest.postgresVersion}.
           The data spans {manifest.dataStart} to {manifest.referenceDate}, and all timestamps are stored in UTC.
         </p>
-        <div className="mt-3 max-w-3xl rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-700/60 dark:bg-amber-950/40 dark:text-amber-200">
+        <div className="mt-3 max-w-3xl rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-700/60 dark:bg-amber-500/10 dark:text-amber-200">
           <strong>Reference date: {manifest.referenceDate}.</strong> Treat this as "today". Questions never use{' '}
           <code>CURRENT_DATE</code> or <code>now()</code>, because answers have to stay reproducible. Write{' '}
           <code>DATE '{manifest.referenceDate}'</code> instead.
@@ -142,5 +142,5 @@ function Badge({ tone, children }: { tone: 'amber' | 'sky' | 'zinc'; children: R
 }
 
 function ErrorBox({ message }: { message: string }) {
-  return <p className="rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-950/40 dark:text-red-300">{message}</p>;
+  return <p className="rounded-xl border border-red-300 bg-red-50 p-3 text-sm text-red-800 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">{message}</p>;
 }
