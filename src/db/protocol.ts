@@ -1,15 +1,23 @@
 // Messages between the main thread (client.ts) and the PGlite worker (worker.ts).
-export type DbName = 'main' | 'hidden';
+import type { Gradable } from '../engine/grade.ts';
+import type { SequenceBaseline } from '../engine/session.ts';
+import type { Feedback, ResultSet, RunOutput } from '../engine/types.ts';
 
-export interface LoadTimings { fetchMs: number; bootMs: number; firstQueryMs: number; bytes: number }
+/** main/hidden are always pristine (sandboxed runs); playground keeps changes until reset. */
+export type Instance = 'main' | 'hidden' | 'playground';
 
 export type Request =
-  | { type: 'load'; db: DbName; url: string }
-  | { type: 'query'; db: DbName; sql: string };
+  | { type: 'open'; instance: Instance; blob: Blob; sequences: SequenceBaseline[] }
+  | { type: 'run'; instance: 'main' | 'playground'; sql: string }
+  | { type: 'grade'; question: Gradable; sql: string }
+  | { type: 'query'; instance: Instance; sql: string };
 
-export type ResponseBody =
-  | { type: 'load'; timings: LoadTimings; serverVersion: string }
-  | { type: 'query'; columns: { name: string; dataTypeID: number }[]; rows: (string | null)[][] };
+export interface ReplyBodies {
+  open: { bootMs: number; serverVersion: string };
+  run: RunOutput;
+  grade: { feedback: Feedback; output: RunOutput };
+  query: ResultSet | null;
+}
 
 export type Envelope<T> = { id: number } & T;
-export type Reply = Envelope<{ ok: true; body: ResponseBody } | { ok: false; error: { message: string; code?: string; position?: number } }>;
+export type Reply = { id: number } & ({ ok: true; body: unknown } | { ok: false; error: { message: string } });
