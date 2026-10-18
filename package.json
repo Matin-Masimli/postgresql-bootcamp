@@ -1,0 +1,39 @@
+{
+  "name": "postgresql-bootcamp",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc",
+    "build:db": "tsx scripts/db/build-snapshots.ts",
+    "bench:db": "tsx scripts/db/bench-load.ts",
+    "test": "vitest run",
+    "check:links": "tsx scripts/check-links.ts"
+  },
+  "dependencies": {
+    "@codemirror/lang-sql": "6.10.0",
+    "@electric-sql/pglite": "0.5.10",
+    "@uiw/react-codemirror": "4.25.12",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "react-markdown": "10.1.0",
+    "react-router": "8.4.0",
+    "remark-gfm": "4.0.1",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "4.3.3",
+    "@types/node": "26.6.5",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.2",
+    "tailwindcss": "4.3.3",
+    "tsx": "4.23.15",
+    "typescript": "7.0.2",
+    "vite": "8.3.4",
+    "vitest": "5.0.5"
+  }
+}
