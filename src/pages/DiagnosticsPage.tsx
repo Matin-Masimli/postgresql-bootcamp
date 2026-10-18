@@ -1,11 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import { DbClient } from '../db/client.ts';
-import type { DbName, LoadTimings } from '../db/protocol.ts';
+import { Engine } from '../db/client.ts';
 import { loadManifest } from '../lib/manifest.ts';
 
 interface Result {
-  db: DbName;
-  timings?: LoadTimings;
+  db: 'main' | 'hidden';
+  timings?: { fetchMs: number; bootMs: number; firstQueryMs: number; bytes: number };
   serverVersion?: string;
   compressedBytes?: number;
   rowCheck?: { table: string; expected: number; actual: number }[];
@@ -22,22 +21,27 @@ export default function DiagnosticsPage() {
     setRunning(true);
     setResults([]);
     const t0 = performance.now();
-    const client = new DbClient();
+    // A separate engine (own worker), so the measurement is cold and doesn't disturb the app's engine.
+    const client = new Engine();
     const manifest = await loadManifest();
     try {
       for (const db of ['main', 'hidden'] as const) {
         try {
-          const { timings, serverVersion } = await client.load(db);
+          await client.ensure(db);
           if (db === 'main') setWorkerStartMs(performance.now() - t0);
+          const tq = performance.now();
           const counts = await client.query(db, manifest.tables.map((t) => `SELECT '${t.name}' AS t, count(*) AS n FROM ${t.name}`).join(' UNION ALL '));
-          const rowCheck = counts.rows.map(([table, n]) => ({ table: table!, expected: manifest.datasets[db].rowCount[table!], actual: Number(n) }));
-          setResults((r) => [...r, { db, timings, serverVersion, rowCheck, compressedBytes: manifest.datasets[db].bytes }]);
+          const firstQueryMs = performance.now() - tq;
+          const rowCheck = counts!.rows.map(([table, n]) => ({ table: table!, expected: manifest.datasets[db].rowCount[table!], actual: Number(n) }));
+          const t = client.timings[db]!;
+          // Unpacked size isn't known after fetch; report the download size from the manifest.
+          setResults((r) => [...r, { db, timings: { ...t, firstQueryMs, bytes: t.bytes }, serverVersion: client.serverVersion, rowCheck, compressedBytes: manifest.datasets[db].bytes }]);
         } catch (e) {
           setResults((r) => [...r, { db, error: (e as Error).message }]);
         }
       }
     } finally {
-      client.terminate();
+      client.dispose();
       setRunning(false);
     }
   };
@@ -82,10 +86,10 @@ export default function DiagnosticsPage() {
               <>
                 <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
                   <dt className="text-zinc-500">Snapshot size</dt>
-                  <dd>{mb(r.compressedBytes!)} gzipped · {mb(r.timings!.bytes)} unpacked</dd>
+                  <dd>{mb(r.compressedBytes!)} (gzipped)</dd>
                   <dt className="text-zinc-500">Download</dt><dd>{fmt(r.timings!.fetchMs)}</dd>
                   <dt className="text-zinc-500">Boot PostgreSQL</dt><dd>{fmt(r.timings!.bootMs)}</dd>
-                  <dt className="text-zinc-500">First query</dt><dd>{fmt(r.timings!.firstQueryMs)}</dd>
+                  <dt className="text-zinc-500">Count all 16 tables</dt><dd>{fmt(r.timings!.firstQueryMs)}</dd>
                   <dt className="text-zinc-500">Server</dt><dd>PostgreSQL {r.serverVersion}</dd>
                 </dl>
                 <p className="mt-3 text-sm">
