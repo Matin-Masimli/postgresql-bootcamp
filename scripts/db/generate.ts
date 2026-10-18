@@ -586,6 +586,21 @@ export function generate({ seed, scale, shufflePhysicalOrder }: GenerateOptions)
       dst.lines = src.lines.map((l, i) => ({ ...l, id: dst.lines[i]?.id ?? ++lineId, orderId: dst.id }));
       dst.feeC = src.feeC;
     }
+    // EDGE: May 2024's most valuable basket belongs to an order that gets cancelled, so
+    // forgetting to exclude cancelled orders changes "top spender of the month" answers.
+    const may = orders.filter((o) => o.at >= at('2024-05-05') && o.at < at('2024-05-25'));
+    const big = may[Math.floor(may.length / 2)];
+    const pricey = sellable
+      .filter((p) => p.launched <= big.at && (p.discontinued == null || p.discontinued + DAY > big.at))
+      .sort((a, b) => b.priceC - a.priceC || a.id - b.id)
+      .slice(0, 3);
+    big.lines = pricey.map((p, i) => ({
+      id: 0, orderId: big.id, lineNo: i + 1, product: p, qty: 3, discMilli: 0,
+      unitC: p.oldPriceC != null && p.priceChange != null && big.at < p.priceChange ? p.oldPriceC : p.priceC,
+    }));
+    big.feeC = 0;
+    big.forceCancelled = true;
+
     // Renumber lines in order sequence (dst baskets may have changed line counts).
     lineId = 0;
     for (const o of orders) for (const l of o.lines) l.id = ++lineId;
