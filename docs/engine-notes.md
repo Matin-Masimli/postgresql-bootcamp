@@ -15,4 +15,5 @@ Facts verified empirically in Node against `@electric-sql/pglite@0.5.10`. Re-ver
 | Snapshot size | The empty datadir gzips to **4.5 MB**: a 16 MB WAL segment (1.5 MB gz) plus `template0`/`template1` (about 1 MB gz each) | At build time: drop both templates, then `CHECKPOINT; pg_switch_wal(); CHECKPOINT` twice with `wal_recycle=off`. The empty baseline becomes **1.05 MB**, and the result reloads and stays writable |
 | `loadDataDir` input | Accepts gzipped **or** plain tar Blobs | Safe even if a server auto-decompresses `.tar.gz` |
 | Sequences | Non-transactional, so `ROLLBACK` does not undo `nextval` | Before each graded run, reset identity sequences to their snapshot values |
+| Huge results | `query()` materialises every row before returning: a 5M-row cross join crashed the Node test worker (OOM, exit 134) | Row-returning statements run as `DECLARE … NO SCROLL CURSOR` + `FETCH 50001`, so at most 50k+1 rows reach JS; error positions are shifted back by the prefix length |
 | Runtime size | `pglite.wasm` 10.5 MB + `pglite.data` 6.2 MB (uncompressed) | Most of the first-load cost; cached by the browser afterwards |

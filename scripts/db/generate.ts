@@ -180,18 +180,21 @@ export function generate({ seed, scale, shufflePhysicalOrder }: GenerateOptions)
       for (let i = 0; i < n; i++) {
         const supplier = rng.chance(0.03) ? null : rng.pick(leafSuppliers);
         let name: string;
+        let band: [number, number] = [spec.min, spec.max];
         if (isBook) {
           const base = titles[i % titles.length];
           const round = Math.floor(i / titles.length);
           name = round === 0 ? base : `${base} (${['2nd', '3rd', '4th', '5th'][round - 1] ?? `${round + 1}th`} ed.)`;
         } else {
           const brand = supplier?.brand && rng.chance(0.75) ? supplier.brand : rng.pick(L.BRANDS);
-          name = `${brand} ${rng.pick(spec.nouns)}`;
+          const noun = rng.pick(spec.nouns);
+          band = L.NOUN_PRICE[noun] ?? band;
+          name = `${brand} ${noun}`;
           if (rng.chance(0.6) || names.has(name)) name += ` ${rng.pick(models)}`;
           while (names.has(name)) name += ` ${rng.pick(models)}`;
         }
         names.add(name);
-        const price = L.snapPrice(Math.exp(Math.log(spec.min) + rng.float() * (Math.log(spec.max) - Math.log(spec.min))));
+        const price = L.snapPrice(Math.exp(Math.log(band[0]) + rng.float() * (Math.log(band[1]) - Math.log(band[0]))));
         const launched = rng.chance(0.18)
           ? at('2019-01-01') + rng.int(0, 729) * DAY
           : at('2021-01-01') + rng.int(0, 1611) * DAY; // up to 2025-05-31
@@ -237,6 +240,10 @@ export function generate({ seed, scale, shufflePhysicalOrder }: GenerateOptions)
       p.neverSold = true;
       p.popularity = 0;
     }
+    // EDGE: a premium product (price ≥ 1000) that has been discontinued.
+    const premium = products.filter((p) => p.priceC >= 100_000 && !p.neverSold && p.discontinued == null && p.launched < at('2023-06-01'));
+    const gone = premium[Math.floor(premium.length / 2)];
+    gone.discontinued = gone.launched + rng.int(400, 700) * DAY;
     // EDGE: the two most expensive laptops share the same list price (tie at the top of a category).
     const laptops = products.filter((p) => L.CATEGORIES[p.categoryId - 1].slug === 'laptops').sort((a, b) => b.priceC - a.priceC);
     laptops[1].priceC = laptops[0].priceC;

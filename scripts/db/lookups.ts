@@ -169,6 +169,33 @@ export const LEAF_PRODUCTS: Record<string, { nouns: string[]; min: number; max: 
   bags: { nouns: ['Leather Tote', 'Laptop Bag', 'Crossbody Bag', 'Weekender Bag'], min: 29, max: 399, weight: [0.4, 1.5] },
 };
 
+/** Realistic list-price band per product type (overrides the leaf band), so a Chromebook isn't priced like a workstation. */
+export const NOUN_PRICE: Record<string, [number, number]> = {
+  'Ultrabook 13"': [899, 1899], 'Laptop 14"': [499, 1199], 'Laptop 15.6"': [449, 1099], 'Gaming Laptop 16"': [1199, 2499], 'Chromebook 11"': [249, 449],
+  'Mini PC': [349, 799], 'Tower Desktop': [599, 1499], 'All-in-One 24"': [799, 1699], Workstation: [1499, 2999],
+  'Mechanical Keyboard': [69, 199], 'Wireless Keyboard': [29, 99], 'Compact Keyboard': [39, 129], 'Ergonomic Keyboard': [59, 149],
+  'Wireless Mouse': [14, 49], 'Gaming Mouse': [39, 129], 'Vertical Mouse': [29, 79], 'Travel Mouse': [9, 29],
+  'Monitor 24"': [129, 249], 'Monitor 27"': [199, 399], 'Curved Monitor 34"': [399, 799], '4K Monitor 32"': [449, 999],
+  Smartphone: [399, 899], 'Smartphone Pro': [899, 1299], 'Smartphone Lite': [149, 349], 'Rugged Phone': [249, 499],
+  'Tablet 10"': [199, 449], 'Tablet 12"': [599, 999], 'E-Reader': [79, 199], 'Kids Tablet': [79, 149],
+  'Phone Case': [9, 49], 'USB-C Charger': [14, 39], 'Power Bank': [24, 79], 'Screen Protector': [5, 19], 'Car Mount': [9, 29],
+  'Wireless Earbuds': [49, 199], 'Over-Ear Headphones': [79, 249], 'Noise-Cancelling Headphones': [199, 449], 'Sport Earbuds': [29, 99],
+  'Bluetooth Speaker': [29, 149], 'Smart Speaker': [49, 199], Soundbar: [199, 599], 'Bookshelf Speakers': [149, 449],
+  'Action Camera': [149, 449], 'Mirrorless Camera': [699, 1899], 'Instant Camera': [59, 149], Webcam: [39, 129],
+  'Frying Pan 28cm': [19, 59], 'Cast Iron Skillet': [29, 79], 'Stockpot 8L': [39, 99], 'Cookware Set': [149, 349],
+  Blender: [39, 149], 'Air Fryer': [69, 199], 'Espresso Machine': [249, 699], 'Electric Kettle': [24, 79], Toaster: [24, 89],
+  "Chef's Knife": [29, 149], 'Knife Block Set': [99, 299], 'Steak Knives (6)': [39, 119], 'Bread Knife': [14, 59],
+  'Office Chair': [149, 599], 'Standing Desk': [299, 899], 'Desk Lamp': [39, 129], Bookshelf: [79, 249],
+  'Coffee Table': [99, 349], 'Floor Lamp': [49, 199], Armchair: [249, 799], 'TV Stand': [99, 399],
+  'Yoga Mat': [19, 99], 'Yoga Block': [9, 24], 'Yoga Strap': [9, 19], 'Meditation Cushion': [24, 69],
+  'Dumbbell Pair 5kg': [24, 59], 'Kettlebell 12kg': [29, 69], 'Adjustable Dumbbells': [199, 499], 'Weight Bench': [129, 349],
+  '2-Person Tent': [99, 299], '4-Person Tent': [199, 699], 'Ultralight Tent': [299, 699], 'Pop-up Shelter': [59, 149],
+  'Hiking Backpack 30L': [59, 149], 'Trekking Backpack 50L': [129, 299], 'Daypack 20L': [29, 79], 'Hydration Pack': [39, 99],
+  'Bike Helmet': [39, 149], 'Bike Lights Set': [19, 59], 'Cycling Gloves': [9, 39], 'Bike Lock': [19, 79], 'Repair Kit': [9, 39],
+  'Analog Watch': [79, 399], Smartwatch: [199, 599], 'Dive Watch': [249, 899], 'Fitness Tracker': [39, 149],
+  'Leather Tote': [79, 299], 'Laptop Bag': [49, 149], 'Crossbody Bag': [39, 149], 'Weekender Bag': [99, 399],
+};
+
 export const BRANDS = [
   'Arcadia', 'Brightline', 'Corvid', 'Duneport', 'Everfield', 'Foxglove', 'Granite', 'Halcyon', 'Ironbark',
   'Juniper', 'Kestrel', 'Lumen', 'Meridian', 'Nimbus', 'Orchard', 'Pinecrest', 'Quarry', 'Redwood',

@@ -77,6 +77,9 @@ export const ASSERTIONS: Assertion[] = [
   { name: 'unpaid orders are pending or cancelled', sql: `SELECT NOT EXISTS (SELECT 1 FROM orders o WHERE status NOT IN ('pending','cancelled') AND NOT EXISTS (SELECT 1 FROM payments p WHERE p.order_id = o.order_id AND p.status = 'captured'))` },
   { name: 'failed and refunded payments present, split payments present', sql: `SELECT count(*) FILTER (WHERE status = 'failed') > 0 AND count(*) FILTER (WHERE status = 'refunded') > 0 AND (SELECT count(*) FROM (SELECT order_id FROM payments WHERE status = 'captured' GROUP BY order_id HAVING count(*) > 1) x) > 0 FROM payments` },
   { name: 'customer with 3+ orders all cancelled', sql: `SELECT EXISTS (SELECT customer_id FROM orders GROUP BY customer_id HAVING count(*) >= 3 AND bool_and(status = 'cancelled'))` },
+  { name: 'a discontinued premium product (price >= 1000)', sql: `SELECT EXISTS (SELECT 1 FROM products WHERE discontinued_at IS NOT NULL AND price >= 1000)` },
+  { name: 'pending orders both before and after 2025-06-01', sql: `SELECT count(*) FILTER (WHERE ordered_at < '2025-06-01') > 0 AND count(*) FILTER (WHERE ordered_at >= '2025-06-01') > 0 FROM orders WHERE status = 'pending'` },
+  { name: 'product prices are plausible for their type', sql: `SELECT NOT EXISTS (SELECT 1 FROM products WHERE (name LIKE '%Chromebook%' AND price > 500) OR (name LIKE '%Webcam%' AND price > 200) OR (name LIKE '%Workstation%' AND price < 1000))` },
   { name: 'some lines sold below the current list price', sql: `SELECT EXISTS (SELECT 1 FROM order_items oi JOIN products p USING (product_id) WHERE oi.unit_price < p.price)` },
   { name: 'coupon codes typed inconsistently', sql: `SELECT count(DISTINCT coupon_code) > count(DISTINCT upper(trim(coupon_code))) FROM orders` },
 
