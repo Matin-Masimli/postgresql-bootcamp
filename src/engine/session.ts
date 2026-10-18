@@ -40,7 +40,8 @@ export class PracticeSession {
 
   /**
    * Runs a submission inside BEGIN … ROLLBACK, statement by statement, and stops at the first error.
-   * `after` (e.g. a verification query) runs in the same transaction before the rollback.
+   * `after` (e.g. a verification query) runs in the same transaction before the rollback. It may contain
+   * several statements (e.g. create a helper function, then SELECT); the last statement's result is returned.
    */
   async runSandboxed(sql: string, opts: RunOptions = {}, after?: string): Promise<{ output: RunOutput; afterResult?: ResultSet; afterError?: SqlError }> {
     const t0 = performance.now();
@@ -60,8 +61,9 @@ export class PracticeSession {
       output.totalMs = performance.now() - t0;
       if (output.error || !after) return { output };
       try {
-        const r = await this.read(after, MAX_GRADED_ROWS, true);
-        return { output, afterResult: r.result };
+        let last: ResultSet | undefined;
+        for (const stmt of splitStatements(after)) last = (await this.read(stmt.text, MAX_GRADED_ROWS, true)).result;
+        return { output, afterResult: last };
       } catch (e) {
         return { output, afterError: toSqlError(e) };
       }

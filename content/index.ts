@@ -1,11 +1,13 @@
 // Registry of topic content. Add each topic file here when it is written.
 import type { Question, Topic } from './types.ts';
+import t01 from './topics/01-query-data.ts';
+import t02 from './topics/02-ddl.ts';
 import t03 from './topics/03-dml.ts';
 import t04 from './topics/04-filtering.ts';
 import t12 from './topics/12-null-functions.ts';
 import t17 from './topics/17-window-ranking.ts';
 
-export const TOPIC_CONTENT: Topic[] = [t03, t04, t12, t17];
+export const TOPIC_CONTENT: Topic[] = [t01, t02, t03, t04, t12, t17];
 
 const byId = new Map(TOPIC_CONTENT.map((t) => [t.id, t]));
 export const topicContent = (id: number): Topic | undefined => byId.get(id);

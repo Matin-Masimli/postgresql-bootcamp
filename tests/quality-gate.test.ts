@@ -141,7 +141,10 @@ for (const topic of TOPIC_CONTENT) {
           checkSqlHygiene(q);
           expect(q.correctOption, `${q.id}: correctOption out of range`).toBeLessThan(q.options.length);
           for (const ds of ['main', 'hidden'] as const) {
-            const r = await sessions[ds].read(q.referenceSolution, 10_000, false);
+            // Predict queries may have several statements (e.g. CREATE, INSERT, SELECT): use the last result.
+            const { output } = await sessions[ds].runSandboxed(q.referenceSolution, { keepFull: true });
+            expect(output.error, `${q.id}: ${output.error?.message}`).toBeUndefined();
+            const r = { result: output.statements.at(-1)?.result };
             expect(r.result, `${q.id}: query returned no result set`).toBeTruthy();
             const matches = q.options.map((o) => tableMatches(r.result!, o.table, q.checkConfig.orderMatters));
             expect(matches.filter(Boolean).length, `${q.id} (${ds}): exactly one option must match; matches: ${JSON.stringify(matches)}; actual: ${JSON.stringify(r.result!.rows)}`).toBe(1);

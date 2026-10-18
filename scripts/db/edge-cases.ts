@@ -14,6 +14,7 @@ export const ASSERTIONS: Assertion[] = [
   // ── dates & time zones
   { name: 'at least 3 orders on leap day 2024-02-29', sql: `SELECT count(*) >= 3 FROM orders WHERE ordered_at >= '2024-02-29' AND ordered_at < '2024-03-01'` },
   { name: 'order at month end 2024-01-31 23:59:59', sql: `SELECT EXISTS (SELECT 1 FROM orders WHERE ordered_at = '2024-01-31 23:59:59+00')` },
+  { name: 'orders just outside the Berlin day 2024-03-31', sql: `SELECT count(*) = 2 FROM orders WHERE ordered_at IN ('2024-03-30 22:30:00+00', '2024-03-31 22:30:00+00')` },
   { name: 'order at year end 2023-12-31 23:30', sql: `SELECT EXISTS (SELECT 1 FROM orders WHERE ordered_at = '2023-12-31 23:30:00+00')` },
   { name: 'orders whose local date differs from the UTC date', sql: `SELECT count(*) >= 50 FROM orders o JOIN customers c USING (customer_id) WHERE c.timezone IS NOT NULL AND (o.ordered_at AT TIME ZONE c.timezone)::date <> o.ordered_at::date` },
   { name: 'nothing happens after the reference date', sql: `SELECT max(ts) < '2025-07-01' FROM (SELECT max(ordered_at) ts FROM orders UNION ALL SELECT max(paid_at) FROM payments UNION ALL SELECT max(delivered_at) FROM shipments UNION ALL SELECT max(created_at) FROM reviews UNION ALL SELECT max(logged_in_at) FROM user_logins UNION ALL SELECT max(requested_at) FROM returns) x` },
@@ -77,6 +78,7 @@ export const ASSERTIONS: Assertion[] = [
   { name: 'unpaid orders are pending or cancelled', sql: `SELECT NOT EXISTS (SELECT 1 FROM orders o WHERE status NOT IN ('pending','cancelled') AND NOT EXISTS (SELECT 1 FROM payments p WHERE p.order_id = o.order_id AND p.status = 'captured'))` },
   { name: 'failed and refunded payments present, split payments present', sql: `SELECT count(*) FILTER (WHERE status = 'failed') > 0 AND count(*) FILTER (WHERE status = 'refunded') > 0 AND (SELECT count(*) FROM (SELECT order_id FROM payments WHERE status = 'captured' GROUP BY order_id HAVING count(*) > 1) x) > 0 FROM payments` },
   { name: 'May 2024: the most valuable order is cancelled', sql: `WITH t AS (${ORDER_TOTALS}) SELECT (SELECT t.status FROM t JOIN orders o USING (order_id) WHERE o.ordered_at >= '2024-05-01' AND o.ordered_at < '2024-06-01' ORDER BY t.total DESC LIMIT 1) = 'cancelled'` },
+  { name: 'an old pending marketplace order', sql: `SELECT EXISTS (SELECT 1 FROM orders WHERE status = 'pending' AND channel = 'marketplace' AND ordered_at < '2025-06-01')` },
   { name: 'customer with 3+ orders all cancelled', sql: `SELECT EXISTS (SELECT customer_id FROM orders GROUP BY customer_id HAVING count(*) >= 3 AND bool_and(status = 'cancelled'))` },
   { name: 'a discontinued premium product (price >= 1000)', sql: `SELECT EXISTS (SELECT 1 FROM products WHERE discontinued_at IS NOT NULL AND price >= 1000)` },
   { name: 'pending orders both before and after 2025-06-01', sql: `SELECT count(*) FILTER (WHERE ordered_at < '2025-06-01') > 0 AND count(*) FILTER (WHERE ordered_at >= '2025-06-01') > 0 FROM orders WHERE status = 'pending'` },

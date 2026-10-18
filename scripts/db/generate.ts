@@ -524,15 +524,22 @@ export function generate({ seed, scale, shufflePhysicalOrder }: GenerateOptions)
     const near = (iso: string, days: number) =>
       orders.filter((o) => Math.abs(o.at - at(iso)) < days * DAY && o.customer.signup < at(iso) - DAY);
     for (const o of near('2024-02-29T12:00:00Z', 6).slice(0, 4)) o.at = at('2024-02-29') + (o.at % DAY);
+    const pinned = new Set<Order>();
     const pin = (iso: string, target: string) => {
-      const o = near(iso, 10).find((x) => x.at !== at(target));
-      if (o) o.at = at(target);
+      const o = near(iso, 10).find((x) => !pinned.has(x) && x.at !== at(target));
+      if (o) {
+        o.at = at(target);
+        pinned.add(o);
+      }
     };
     pin('2024-01-31T12:00:00Z', '2024-01-31T23:59:59Z');
     pin('2023-12-31T12:00:00Z', '2023-12-31T23:30:00Z');
     pin('2024-04-30T12:00:00Z', '2024-04-30T23:45:00Z');
     pin('2023-02-28T12:00:00Z', '2023-02-28T22:10:00Z');
     pin('2024-03-31T12:00:00Z', '2024-03-31T01:30:00Z'); // EU DST switch night
+    // Just outside the Berlin calendar day 2024-03-31 (local midnights are 23:00Z on 30 Mar and 22:00Z on 31 Mar).
+    pin('2024-03-30T12:00:00Z', '2024-03-30T22:30:00Z');
+    pin('2024-03-31T12:00:00Z', '2024-03-31T22:30:00Z');
 
     orders.sort((a, b) => a.at - b.at || a.customer.id - b.customer.id);
     orders.forEach((o, i) => (o.id = i + 1));
@@ -680,6 +687,14 @@ export function generate({ seed, scale, shufflePhysicalOrder }: GenerateOptions)
       o.shippedAt = ship1;
       o.deliveredAt = allDelivered ? lastDelivery : null;
       o.status = allDelivered ? 'delivered' : 'shipped';
+    }
+
+    // EDGE: an old order stuck in 'pending' that came through the marketplace (operator-precedence questions).
+    const stuckPending = orders.find((o) => o.status === 'pending' && o.at < at('2025-06-01'));
+    if (stuckPending) {
+      stuckPending.channel = 'marketplace';
+      stuckPending.repId = null;
+      stuckPending.feeC = 0;
     }
 
     // EDGE: a handful of delivered orders whose captured amount doesn't match the order value.
