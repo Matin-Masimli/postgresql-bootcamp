@@ -33,6 +33,7 @@ export const ASSERTIONS: Assertion[] = [
   { name: 'Legal department has no employees', sql: `SELECT NOT EXISTS (SELECT 1 FROM employees e JOIN departments d USING (department_id) WHERE d.name = 'Legal')` },
   { name: '5-20% of customers never ordered', sql: `SELECT avg((NOT EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.customer_id))::int) BETWEEN 0.05 AND 0.20 FROM customers c` },
   { name: 'at least 10 products never sold', sql: `SELECT count(*) >= 10 FROM products p WHERE NOT EXISTS (SELECT 1 FROM order_items oi WHERE oi.product_id = p.product_id)` },
+  { name: 'a product that only appears in cancelled orders', sql: `SELECT EXISTS (SELECT 1 FROM order_items oi JOIN orders o USING (order_id) GROUP BY oi.product_id HAVING bool_and(o.status = 'cancelled'))` },
   { name: 'a never-sold product has a review', sql: `SELECT EXISTS (SELECT 1 FROM reviews r WHERE NOT EXISTS (SELECT 1 FROM order_items oi WHERE oi.product_id = r.product_id))` },
   { name: 'customers who ordered but never logged in, and vice versa', sql: `SELECT EXISTS (SELECT 1 FROM orders o WHERE NOT EXISTS (SELECT 1 FROM user_logins l WHERE l.customer_id = o.customer_id)) AND EXISTS (SELECT 1 FROM user_logins l WHERE NOT EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = l.customer_id))` },
   { name: 'orders with NULL ship country', sql: `SELECT EXISTS (SELECT 1 FROM orders WHERE ship_country_id IS NULL)` },

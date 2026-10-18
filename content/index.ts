@@ -4,10 +4,13 @@ import t01 from './topics/01-query-data.ts';
 import t02 from './topics/02-ddl.ts';
 import t03 from './topics/03-dml.ts';
 import t04 from './topics/04-filtering.ts';
+import t05 from './topics/05-joins-basics.ts';
+import t06 from './topics/06-joins-advanced.ts';
+import t07 from './topics/07-set-operators.ts';
 import t12 from './topics/12-null-functions.ts';
 import t17 from './topics/17-window-ranking.ts';
 
-export const TOPIC_CONTENT: Topic[] = [t01, t02, t03, t04, t12, t17];
+export const TOPIC_CONTENT: Topic[] = [t01, t02, t03, t04, t05, t06, t07, t12, t17];
 
 const byId = new Map(TOPIC_CONTENT.map((t) => [t.id, t]));
 export const topicContent = (id: number): Topic | undefined => byId.get(id);

@@ -92,7 +92,8 @@ export function splitStatements(sql: string): Statement[] {
     if (hasCode) {
       const text = sql.slice(start, end);
       const code = codeOnly(text).toUpperCase();
-      const head = code.trim().split(/\s+/).slice(0, 4).join(' ').replace(/[(;'"].*$/, '').trim();
+      // Leading parentheses belong to a parenthesised query, e.g. "(SELECT …) UNION ALL (SELECT …)".
+      const head = code.trim().replace(/^[(\s]+/, '').split(/\s+/).slice(0, 4).join(' ').replace(/[(;'"].*$/, '').trim();
       out.push({ text, start, head, code });
     }
     hasCode = false;

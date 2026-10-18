@@ -605,6 +605,15 @@ export function generate({ seed, scale, shufflePhysicalOrder }: GenerateOptions)
       id: 0, orderId: big.id, lineNo: i + 1, product: p, qty: 3, discMilli: 0,
       unitC: p.oldPriceC != null && p.priceChange != null && big.at < p.priceChange ? p.oldPriceC : p.priceC,
     }));
+    // EDGE: a product whose only appearance is in this (cancelled) order.
+    const firstUnsold = products.find((p) => p.neverSold);
+    const ghost = products.find((p) => p.neverSold && p !== firstUnsold && p.launched <= big.at && (p.discontinued == null || p.discontinued + DAY > big.at));
+    if (ghost) {
+      big.lines.push({
+        id: 0, orderId: big.id, lineNo: big.lines.length + 1, product: ghost, qty: 1, discMilli: 0,
+        unitC: ghost.oldPriceC != null && ghost.priceChange != null && big.at < ghost.priceChange ? ghost.oldPriceC : ghost.priceC,
+      });
+    }
     big.feeC = 0;
     big.forceCancelled = true;
 
