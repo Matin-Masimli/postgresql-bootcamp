@@ -4,7 +4,14 @@ export interface Column { name: string; dataTypeID: number }
 /** A result set with every value in PostgreSQL's canonical text form (NULL = null). */
 export interface ResultSet { columns: Column[]; rows: (string | null)[][] }
 
+/**
+ * A translatable message: the UI looks up `key` in the current language's dictionary and fills in `params`.
+ * The English text is always kept alongside (summary, message), so Node tests and logs stay readable.
+ */
+export interface Msg { key: string; params?: Record<string, string | number> }
+
 export interface SqlError {
+  msg?: Msg;
   message: string;
   code?: string;
   detail?: string;
@@ -39,6 +46,7 @@ export interface Feedback {
   pass: boolean;
   /** One-line verdict shown prominently. */
   summary: string;
+  msg?: Msg;
   /** Which dataset the verdict refers to. Hidden-data failures never include hidden rows. */
   dataset?: Dataset;
   kind?: 'error' | 'columns' | 'rows' | 'order' | 'values' | 'too-many-rows' | 'no-result' | 'hidden';
@@ -52,5 +60,6 @@ export interface Feedback {
   /** For ordered comparisons: first differing row. */
   firstMismatch?: { index: number; expected: (string | null)[] | null; actual: (string | null)[] | null; cells: number[] };
   notes?: string[];
+  noteMsgs?: Msg[];
   error?: SqlError;
 }

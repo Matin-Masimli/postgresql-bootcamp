@@ -2,6 +2,7 @@
 // worker terminated and restarted from the snapshot Blobs kept in memory (PGlite cannot cancel queries).
 import { useSyncExternalStore } from 'react';
 import type { Gradable } from '../engine/grade.ts';
+import type { Msg } from '../engine/types.ts';
 import type { Instance, Reply, ReplyBodies, Request } from './protocol.ts';
 import { loadManifest, publicUrl } from '../lib/manifest.ts';
 
@@ -9,10 +10,15 @@ export type EngineStatus = 'idle' | 'loading' | 'ready' | 'restarting' | 'error'
 
 export class TimeoutError extends Error {
   readonly code = 'TIMEOUT';
+  readonly msg: Msg;
+  constructor(message: string, seconds: number) {
+    super(message);
+    this.msg = { key: 'err.timeout', params: { seconds } };
+  }
 }
 
 /** Turns a rejected engine call into an error the result views can show. */
-export const runError = (e: unknown) => ({ message: (e as Error).message ?? String(e), code: (e as { code?: string }).code });
+export const runError = (e: unknown) => ({ message: (e as Error).message ?? String(e), code: (e as { code?: string }).code, msg: (e as { msg?: Msg }).msg });
 
 const TIMEOUT_MS = { run: 10_000, grade: 20_000, open: 120_000, query: 15_000 } as const;
 
@@ -67,7 +73,7 @@ export class Engine {
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
         this.pending.delete(id);
-        reject(new TimeoutError(`Stopped after ${timeoutMs / 1000} s. The query took too long (an accidental cross join or an endless recursive CTE?). The database was restarted, so you can try again.`));
+        reject(new TimeoutError(`Stopped after ${timeoutMs / 1000} s. The query took too long (an accidental cross join or an endless recursive CTE?). The database was restarted, so you can try again.`, timeoutMs / 1000));
         void this.restart();
       }, timeoutMs);
       this.pending.set(id, { resolve: resolve as (b: unknown) => void, reject, timer });

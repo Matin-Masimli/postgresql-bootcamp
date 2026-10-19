@@ -80,9 +80,9 @@ LIMIT 3`);
     expect(nodes.some((n) => n.kind === 'join')).toBe(true);
     const scans = nodes.filter((n) => n.kind === 'scan').map((n) => n.target);
     expect(scans).toEqual(expect.arrayContaining(['orders o', 'customers cu', 'countries c']));
-    expect(nodes.flatMap((n) => n.details.map((d) => d.label))).toContain('join on');
+    expect(nodes.flatMap((n) => n.details.map((d) => d.label))).toContain('joinOn');
     for (const n of nodes) {
-      expect(n.description.length).toBeGreaterThan(5);
+      expect(n.description.key).toMatch(/^plan\.[a-zA-Z]+$/);
       expect(n.selfMs).toBeGreaterThanOrEqual(0);
     }
   });

@@ -1,15 +1,39 @@
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router';
 import { engine, useEngineStatus } from '../db/client.ts';
+import { LOCALES, setLocale, useLocale, useT } from '../i18n/index.ts';
 
 const NAV = [
-  { to: '/', label: 'Learn', end: true },
-  { to: '/review', label: 'Review' },
-  { to: '/exam', label: 'Exam' },
-  { to: '/playground', label: 'Playground' },
-  { to: '/schema', label: 'Schema' },
-  { to: '/progress', label: 'Progress' },
-];
+  { to: '/', label: 'nav.learn', end: true },
+  { to: '/review', label: 'nav.review', end: false },
+  { to: '/exam', label: 'nav.exam', end: false },
+  { to: '/playground', label: 'nav.playground', end: false },
+  { to: '/schema', label: 'nav.schema', end: false },
+  { to: '/progress', label: 'nav.progress', end: false },
+] as const;
+
+/** EN / AZ segmented switch. */
+function LanguageSwitch() {
+  const t = useT();
+  const locale = useLocale();
+  return (
+    <div role="radiogroup" aria-label={t('nav.language')} className="flex shrink-0 rounded-lg border border-zinc-200 bg-white/60 p-0.5 font-mono text-[11px] dark:border-zinc-800 dark:bg-zinc-900/60">
+      {LOCALES.map((l) => (
+        <button
+          key={l.id}
+          type="button"
+          role="radio"
+          aria-checked={locale === l.id}
+          title={l.name}
+          onClick={() => setLocale(l.id)}
+          className={`rounded-md px-1.5 py-0.5 transition ${locale === l.id ? 'bg-sky-600 font-semibold text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100'}`}
+        >
+          {l.label}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 function useTheme(): [boolean, () => void] {
   const [dark, setDark] = useState(() => document.documentElement.classList.contains('dark'));
@@ -40,9 +64,10 @@ export function Logo({ className = 'size-8' }: { className?: string }) {
 }
 
 function EngineIndicator() {
+  const t = useT();
   const status = useEngineStatus();
   if (status === 'idle') return null;
-  const label = { loading: 'Loading database…', ready: 'PostgreSQL ready', restarting: 'Restarting database…', error: `Database error: ${engine.statusDetail}` }[status];
+  const label = { loading: t('engine.loading'), ready: t('engine.ready'), restarting: t('engine.restarting'), error: t('engine.error', { detail: engine.statusDetail }) }[status];
   const color = { loading: 'bg-amber-400 animate-pulse', ready: 'bg-emerald-400 shadow-[0_0_8px_2px] shadow-emerald-400/50', restarting: 'bg-amber-400 animate-pulse', error: 'bg-red-500' }[status];
   return (
     <span className="hidden items-center gap-2 rounded-full border border-zinc-200 bg-white/60 px-2.5 py-1 font-mono text-[11px] text-zinc-500 sm:flex dark:border-zinc-800 dark:bg-zinc-900/60" title={label} role="status" aria-label={label}>
@@ -53,6 +78,7 @@ function EngineIndicator() {
 }
 
 export default function Layout() {
+  const t = useT();
   const [dark, toggleTheme] = useTheme();
   const { pathname } = useLocation();
   useEffect(() => {
@@ -63,7 +89,7 @@ export default function Layout() {
     <div className="flex min-h-dvh flex-col">
       <header className="sticky top-0 z-30 border-b border-zinc-200/80 bg-white/70 backdrop-blur-xl dark:border-zinc-800/80 dark:bg-zinc-950/70">
         <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-2.5">
-          <NavLink to="/" className="flex shrink-0 items-center gap-2.5" aria-label="PostgreSQL Bootcamp home">
+          <NavLink to="/" className="flex shrink-0 items-center gap-2.5" aria-label={t('nav.homeAria')}>
             <Logo />
             <span className="hidden font-mono text-sm font-semibold tracking-tight lg:inline">
               pg<span className="text-sky-500">/</span>bootcamp
@@ -81,7 +107,7 @@ export default function Layout() {
               >
                 {({ isActive }) => (
                   <>
-                    {n.label}
+                    {t(n.label)}
                     {isActive && <span aria-hidden className="absolute inset-x-3 -bottom-[11px] h-0.5 rounded-full bg-linear-to-r from-sky-500 to-violet-500" />}
                   </>
                 )}
@@ -89,12 +115,13 @@ export default function Layout() {
             ))}
           </nav>
           <EngineIndicator />
+          <LanguageSwitch />
           <button
             type="button"
             onClick={toggleTheme}
             className="grid size-8 shrink-0 place-items-center rounded-lg text-zinc-500 transition hover:bg-zinc-900/5 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-white/5 dark:hover:text-white"
-            aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
-            title={dark ? 'Light mode' : 'Dark mode'}
+            aria-label={dark ? t('theme.toLight') : t('theme.toDark')}
+            title={dark ? t('theme.light') : t('theme.dark')}
           >
             {dark ? (
               <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></svg>
@@ -108,7 +135,7 @@ export default function Layout() {
         <Outlet />
       </main>
       <footer className="border-t border-zinc-200/80 py-6 text-center font-mono text-[11px] text-zinc-500 dark:border-zinc-800/80">
-        Real PostgreSQL 18, compiled to WebAssembly, running in this tab · progress stays in your browser
+        {t('footer.text')}
       </footer>
     </div>
   );

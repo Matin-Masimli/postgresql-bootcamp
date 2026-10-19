@@ -1,5 +1,6 @@
 // Splits a submission into statements (respecting quotes, dollar quotes and nested comments)
 // and rejects statements that would break the sandbox transaction.
+import type { Msg } from './types.ts';
 
 type SegmentKind = 'code' | 'comment' | 'string' | 'separator';
 
@@ -118,7 +119,7 @@ export function isCursorable(s: Statement): boolean {
   return false;
 }
 
-export interface ScanProblem { statementIndex: number; message: string }
+export interface ScanProblem { statementIndex: number; message: string; msg: Msg }
 
 const TX_CONTROL = /^(BEGIN|START TRANSACTION|COMMIT|END|ABORT|ROLLBACK(?! TO)|PREPARE TRANSACTION|COMMIT PREPARED|ROLLBACK PREPARED)\b/;
 const NOT_IN_TX = [
@@ -144,12 +145,13 @@ export function findSandboxProblems(statements: Statement[]): ScanProblem[] {
       problems.push({
         statementIndex,
         message: `"${s.head.split(' ')[0]}" isn't needed here: every run is automatically wrapped in a transaction that is rolled back afterwards, so the database always starts fresh. Remove the transaction-control statements (you can practise them in the Playground).`,
+        msg: { key: 'err.txControl', params: { cmd: s.head.split(' ')[0] } },
       });
       return;
     }
     for (const [re, label] of NOT_IN_TX) {
       if (re.test(s.head)) {
-        problems.push({ statementIndex, message: `${label} can't run inside the sandbox transaction. Try it in the Playground instead.` });
+        problems.push({ statementIndex, message: `${label} can't run inside the sandbox transaction. Try it in the Playground instead.`, msg: { key: 'err.notInTx', params: { label } } });
         return;
       }
     }

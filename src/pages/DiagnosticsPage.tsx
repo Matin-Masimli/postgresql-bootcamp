@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Engine } from '../db/client.ts';
 import { loadManifest } from '../lib/manifest.ts';
+import { useT } from '../i18n/index.ts';
+import Rich from '../i18n/Rich.tsx';
 
 interface Result {
   db: 'main' | 'hidden';
@@ -13,6 +15,7 @@ interface Result {
 
 /** Loads both snapshots in a fresh worker and reports real in-browser timings. */
 export default function DiagnosticsPage() {
+  const t = useT();
   const [results, setResults] = useState<Result[]>([]);
   const [running, setRunning] = useState(false);
   const [workerStartMs, setWorkerStartMs] = useState<number | null>(null);
@@ -57,46 +60,43 @@ export default function DiagnosticsPage() {
   return (
     <div className="space-y-5">
       <section>
-        <h1 className="text-3xl font-semibold tracking-tight">Diagnostics</h1>
-        <p className="mt-1 max-w-2xl text-zinc-600 dark:text-zinc-400">
-          Boots a fresh in-browser PostgreSQL from each prebuilt snapshot and times it. The first visit also downloads and
-          compiles the PostgreSQL WebAssembly runtime (about 17 MB uncompressed). Later visits use the browser cache.
-        </p>
+        <h1 className="text-3xl font-semibold tracking-tight">{t('diag.title')}</h1>
+        <p className="mt-1 max-w-2xl text-zinc-600 dark:text-zinc-400">{t('diag.intro')}</p>
         <button
           type="button"
           onClick={run}
           disabled={running}
           className="btn-primary mt-3"
         >
-          {running ? 'Measuring…' : 'Measure again'}
+          {running ? t('diag.measuring') : t('diag.measureAgain')}
         </button>
       </section>
       {workerStartMs != null && (
         <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          Time until the main database was ready (worker start + download + boot): <strong>{fmt(workerStartMs)}</strong>
+          <Rich text={t('diag.readyIn', { time: fmt(workerStartMs) })} />
         </p>
       )}
       <div className="grid gap-4 md:grid-cols-2">
         {results.map((r) => (
           <section key={r.db} className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-            <h2 className="font-semibold">{r.db === 'main' ? 'Main dataset' : 'Hidden dataset (used only for checking)'}</h2>
+            <h2 className="font-semibold">{r.db === 'main' ? t('diag.main') : t('diag.hidden')}</h2>
             {r.error ? (
               <p className="mt-2 text-sm text-red-700 dark:text-red-400">{r.error}</p>
             ) : (
               <>
                 <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-                  <dt className="text-zinc-500">Snapshot size</dt>
-                  <dd>{mb(r.compressedBytes!)} (gzipped)</dd>
-                  <dt className="text-zinc-500">Download</dt><dd>{fmt(r.timings!.fetchMs)}</dd>
-                  <dt className="text-zinc-500">Boot PostgreSQL</dt><dd>{fmt(r.timings!.bootMs)}</dd>
-                  <dt className="text-zinc-500">Count all 16 tables</dt><dd>{fmt(r.timings!.firstQueryMs)}</dd>
-                  <dt className="text-zinc-500">Server</dt><dd>PostgreSQL {r.serverVersion}</dd>
+                  <dt className="text-zinc-500">{t('diag.snapshot')}</dt>
+                  <dd>{t('diag.gzipped', { size: mb(r.compressedBytes!) })}</dd>
+                  <dt className="text-zinc-500">{t('diag.download')}</dt><dd>{fmt(r.timings!.fetchMs)}</dd>
+                  <dt className="text-zinc-500">{t('diag.boot')}</dt><dd>{fmt(r.timings!.bootMs)}</dd>
+                  <dt className="text-zinc-500">{t('diag.count')}</dt><dd>{fmt(r.timings!.firstQueryMs)}</dd>
+                  <dt className="text-zinc-500">{t('diag.server')}</dt><dd>PostgreSQL {r.serverVersion}</dd>
                 </dl>
                 <p className="mt-3 text-sm">
-                  Row counts vs manifest:{' '}
+                  {t('diag.rowCheck')}{' '}
                   {r.rowCheck!.every((c) => c.expected === c.actual)
-                    ? <span className="text-emerald-700 dark:text-emerald-400">all {r.rowCheck!.length} tables match ✓</span>
-                    : <span className="text-red-700 dark:text-red-400">mismatch: {r.rowCheck!.filter((c) => c.expected !== c.actual).map((c) => c.table).join(', ')}</span>}
+                    ? <span className="text-emerald-700 dark:text-emerald-400">{t('diag.allMatch', { n: r.rowCheck!.length })}</span>
+                    : <span className="text-red-700 dark:text-red-400">{t('diag.mismatch', { list: r.rowCheck!.filter((c) => c.expected !== c.actual).map((c) => c.table).join(', ') })}</span>}
                 </p>
               </>
             )}

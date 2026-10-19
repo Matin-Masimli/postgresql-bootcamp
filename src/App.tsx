@@ -10,6 +10,12 @@ import QuestionPage from './pages/QuestionPage.tsx';
 import ReviewPage from './pages/ReviewPage.tsx';
 import SchemaPage from './pages/SchemaPage.tsx';
 import TopicPage from './pages/TopicPage.tsx';
+import { useT } from './i18n/index.ts';
+
+function NotFound() {
+  const t = useT();
+  return <p className="text-zinc-500">{t('app.notFound')}</p>;
+}
 
 export default function App() {
   return (
@@ -25,7 +31,7 @@ export default function App() {
         <Route path="schema" element={<SchemaPage />} />
         <Route path="progress" element={<ProgressPage />} />
         <Route path="diagnostics" element={<DiagnosticsPage />} />
-        <Route path="*" element={<p className="text-zinc-500">Page not found.</p>} />
+        <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
   );

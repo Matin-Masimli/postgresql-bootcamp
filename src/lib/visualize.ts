@@ -18,7 +18,7 @@ export interface Visualization {
  */
 export async function visualize(script: string, instance: 'main' | 'playground'): Promise<Visualization> {
   const req = buildExplain(script, instance === 'main' ? { keepEarlier: true, analyze: true } : { keepEarlier: false, analyze: 'readOnly' });
-  if ('error' in req) return { error: { message: req.error, code: 'VISUALIZE' } };
+  if ('error' in req) return { error: { message: req.error, msg: req.msg, code: 'VISUALIZE' } };
   try {
     const output = await engine.run(req.sql, instance);
     if (output.error) {

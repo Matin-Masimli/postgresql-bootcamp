@@ -1,4 +1,6 @@
 import type { TableMeta } from '../lib/manifest.ts';
+import { useContent } from '../i18n/content.ts';
+import { useT } from '../i18n/index.ts';
 
 // Hand-tuned grid placement: [column, row]. Related tables sit next to each other.
 const LAYOUT: Record<string, [number, number]> = {
@@ -17,6 +19,8 @@ const PAD = 16;
 interface Box { t: TableMeta; x: number; y: number; h: number; keys: { name: string; pk: boolean; fk: string | null }[] }
 
 export default function ErDiagram({ tables, onSelect }: { tables: TableMeta[]; onSelect: (name: string) => void }) {
+  const t = useT();
+  const content = useContent();
   const boxes = new Map<string, Box>();
   for (const t of tables) {
     const pk = new Set(t.constraints.filter((c) => c.type === 'p').flatMap((c) => c.columns));
@@ -63,7 +67,7 @@ export default function ErDiagram({ tables, onSelect }: { tables: TableMeta[]; o
   }
 
   return (
-    <svg viewBox={`0 0 ${width} ${height}`} width={width} height={height} className="block max-w-none" role="img" aria-label="Entity-relationship diagram of the practice database">
+    <svg viewBox={`0 0 ${width} ${height}`} width={width} height={height} className="block max-w-none" role="img" aria-label={t('schema.erAria')}>
       <defs>
         <marker id="er-dot" viewBox="0 0 8 8" refX="4" refY="4" markerWidth="6" markerHeight="6">
           <circle cx="4" cy="4" r="3" className="fill-sky-600 dark:fill-sky-400" />
@@ -76,11 +80,11 @@ export default function ErDiagram({ tables, onSelect }: { tables: TableMeta[]; o
       </g>
       {[...boxes.values()].map((b) => (
         <g key={b.t.name} transform={`translate(${b.x},${b.y})`} className="cursor-pointer" onClick={() => onSelect(b.t.name)}>
-          <title>{b.t.comment ?? b.t.name}</title>
+          <title>{content.schemaComment(b.t.name, b.t.comment) ?? b.t.name}</title>
           <rect width={BOX_W} height={b.h} rx={7} className="fill-white stroke-zinc-300 dark:fill-zinc-900 dark:stroke-zinc-700" />
           <path d={`M0,7 a7,7 0 0 1 7,-7 h${BOX_W - 14} a7,7 0 0 1 7,7 v${HEAD_H - 9} h-${BOX_W} z`} className="fill-zinc-100 dark:fill-zinc-800" />
           <text x={10} y={15} className="fill-zinc-900 text-[12px] font-semibold dark:fill-zinc-100">{b.t.name}</text>
-          <text x={10} y={28} className="fill-zinc-500 text-[10px]">{(b.t.rowCount.main ?? 0).toLocaleString()} rows</text>
+          <text x={10} y={28} className="fill-zinc-500 text-[10px]">{t('common.rows', { n: b.t.rowCount.main ?? 0 })}</text>
           {b.keys.map((k, i) => (
             <text key={k.name} x={10} y={HEAD_H + i * LINE_H + 14} className="fill-zinc-700 font-mono text-[11px] dark:fill-zinc-300">
               <tspan className={k.pk ? 'fill-amber-600 dark:fill-amber-400' : 'fill-sky-700 dark:fill-sky-400'}>{k.pk ? 'PK ' : 'FK '}</tspan>

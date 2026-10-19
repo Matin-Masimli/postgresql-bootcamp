@@ -1,11 +1,13 @@
 // Query visualizer model: turns EXPLAIN (FORMAT JSON) output into an annotated plan tree, and maps the
 // statement's top-level clauses onto SQL's logical evaluation order with row counts taken from the plan.
 import { isCursorable, splitStatements, type Statement } from './sqlScan.ts';
+import type { Msg } from './types.ts';
 
 // ───────────────────────── plan tree ─────────────────────────
 
 export type NodeKind = 'scan' | 'join' | 'aggregate' | 'sort' | 'modify' | 'other';
 
+/** `label` is a message key (plan.detail.*); `value` is PostgreSQL's own text (SQL), never translated. */
 export interface PlanDetail { label: string; value: string }
 
 export interface PlanNode {
@@ -13,8 +15,8 @@ export interface PlanNode {
   kind: NodeKind;
   /** e.g. "orders o", "index orders_pkey", "CTE monthly". */
   target?: string;
-  /** Plain-English description of what this step does. */
-  description: string;
+  /** What this step does, as a translatable message. */
+  description: Msg;
   /** How the node relates to its parent when it isn't an ordinary input (InitPlan, SubPlan…). */
   role?: string;
   /** Rows produced in total (actual rows × loops when analyzed, else the estimate). */
@@ -72,68 +74,66 @@ function balanced(s: string) {
   return d === 0;
 }
 
-function describe(n: RawNode): { description: string; target?: string } {
+function describe(n: RawNode): { description: Msg; target?: string } {
   const type = String(n['Node Type']);
-  const rel = str(n['Relation Name']);
+  const rel = str(n['Relation Name']) ?? '';
   const alias = str(n['Alias']);
   const table = rel ? (alias && alias !== rel ? `${rel} ${alias}` : rel) : undefined;
-  const index = str(n['Index Name']);
+  const index = str(n['Index Name']) ?? '';
+  const cte = str(n['CTE Name']) ?? '';
+  const fn = str(n['Function Name']) ?? '';
   const join = str(n['Join Type']) ?? 'Inner';
-  const joinWord = { Inner: 'Inner', Left: 'Left', Right: 'Right', Full: 'Full', Semi: 'Semi', Anti: 'Anti', 'Right Anti': 'Right anti', 'Right Semi': 'Right semi' }[join] ?? join;
+  const m = (key: string, params?: Msg['params']): Msg => ({ key: `plan.${key}`, params });
   switch (type) {
-    case 'Seq Scan': return { target: table, description: `Reads every row of ${rel} from start to end.` };
-    case 'Index Scan': return { target: table, description: `Looks up the matching rows of ${rel} through the index ${index}.` };
-    case 'Index Only Scan': return { target: table, description: `Answers from the index ${index} alone, without visiting the table.` };
-    case 'Bitmap Index Scan': return { target: index, description: `Collects the locations of matching rows from the index ${index}.` };
-    case 'Bitmap Heap Scan': return { target: table, description: `Fetches the rows of ${rel} found by the index scan below, page by page.` };
-    case 'CTE Scan': return { target: `CTE ${str(n['CTE Name'])}`, description: `Reads the rows of the CTE ${str(n['CTE Name'])}.` };
-    case 'WorkTable Scan': return { target: str(n['CTE Name']), description: 'Reads the rows produced by the previous step of the recursion.' };
-    case 'Subquery Scan': return { target: alias, description: 'Reads the result of a subquery in FROM.' };
-    case 'Function Scan': return { target: str(n['Function Name']), description: `Calls the set-returning function ${str(n['Function Name'])}().` };
-    case 'Values Scan': return { description: 'Reads the rows of a VALUES list.' };
-    case 'Hash Join': return { description: `${joinWord} join: builds a hash table from the lower input, then probes it with every row of the upper input.` };
-    case 'Merge Join': return { description: `${joinWord} join: walks two inputs that are both sorted on the join key, side by side.` };
-    case 'Nested Loop': return { description: `${joinWord} join: for each row of the upper input, looks for matches in the lower input.` };
-    case 'Hash': return { description: 'Builds an in-memory hash table from its input, for the hash join above.' };
+    case 'Seq Scan': return { target: table, description: m('seqScan', { rel }) };
+    case 'Index Scan': return { target: table, description: m('indexScan', { rel, index }) };
+    case 'Index Only Scan': return { target: table, description: m('indexOnlyScan', { index }) };
+    case 'Bitmap Index Scan': return { target: index, description: m('bitmapIndexScan', { index }) };
+    case 'Bitmap Heap Scan': return { target: table, description: m('bitmapHeapScan', { rel }) };
+    case 'CTE Scan': return { target: `CTE ${cte}`, description: m('cteScan', { cte }) };
+    case 'WorkTable Scan': return { target: cte, description: m('workTableScan') };
+    case 'Subquery Scan': return { target: alias, description: m('subqueryScan') };
+    case 'Function Scan': return { target: fn, description: m('functionScan', { fn }) };
+    case 'Values Scan': return { description: m('valuesScan') };
+    case 'Hash Join': return { description: m('hashJoin', { join }) };
+    case 'Merge Join': return { description: m('mergeJoin', { join }) };
+    case 'Nested Loop': return { description: m('nestedLoop', { join }) };
+    case 'Hash': return { description: m('hash') };
     case 'Aggregate': {
-      const s = str(n['Strategy']);
-      const d = s === 'Plain' ? 'Computes aggregates over all input rows (no GROUP BY): one output row.'
-        : s === 'Hashed' ? 'Groups rows with a hash table and computes aggregates per group.'
-        : s === 'Sorted' ? 'Groups rows that arrive sorted by the group key and computes aggregates per group.'
-        : 'Computes grouping sets (ROLLUP / CUBE).';
-      return { description: d };
+      const st = str(n['Strategy']);
+      return { description: m(st === 'Plain' ? 'aggPlain' : st === 'Hashed' ? 'aggHashed' : st === 'Sorted' ? 'aggSorted' : 'aggMixed') };
     }
-    case 'WindowAgg': return { description: 'Computes window functions: every input row stays, with values from its window added.' };
-    case 'Group': return { description: 'Collapses sorted rows with equal keys into groups.' };
-    case 'Unique': return { description: 'Removes duplicate rows from sorted input (DISTINCT).' };
-    case 'Sort': return { description: `Sorts rows by ${str(n['Sort Key'])}.` };
-    case 'Incremental Sort': return { description: `Finishes sorting by ${str(n['Sort Key'])}, using input that is already partly sorted.` };
-    case 'Limit': return { description: 'Stops after the required number of rows (LIMIT / OFFSET).' };
-    case 'Append': return { description: 'Concatenates the results of its inputs (UNION ALL).' };
-    case 'Merge Append': return { description: 'Merges sorted inputs, keeping them in order.' };
-    case 'SetOp': case 'HashSetOp': return { description: `Combines two inputs with ${str(n['Command'])?.toUpperCase() ?? 'a set operation'}.` };
-    case 'Recursive Union': return { description: 'Runs a recursive CTE: the anchor once, then the recursive part repeatedly until it returns no rows.' };
-    case 'Result': return { description: 'Computes values without reading any table (or applies a constant filter).' };
-    case 'ProjectSet': return { description: 'Expands set-returning functions used in the SELECT list.' };
-    case 'Materialize': return { description: 'Stores its input in memory so it can be re-read cheaply.' };
-    case 'Memoize': return { description: 'Caches the results of the lower input by key, so repeated lookups are free.' };
-    case 'ModifyTable': return { target: table, description: `${str(n['Operation']) ?? 'Writes'}: writes the changed rows into ${rel}.` };
-    case 'LockRows': return { description: 'Locks the returned rows (FOR UPDATE / FOR SHARE).' };
-    default: return { target: table, description: type };
+    case 'WindowAgg': return { description: m('windowAgg') };
+    case 'Group': return { description: m('group') };
+    case 'Unique': return { description: m('unique') };
+    case 'Sort': return { description: m('sort', { key: str(n['Sort Key']) ?? '' }) };
+    case 'Incremental Sort': return { description: m('incrementalSort', { key: str(n['Sort Key']) ?? '' }) };
+    case 'Limit': return { description: m('limit') };
+    case 'Append': return { description: m('append') };
+    case 'Merge Append': return { description: m('mergeAppend') };
+    case 'SetOp': case 'HashSetOp': return { description: m('setOp', { op: str(n['Command'])?.toUpperCase() ?? 'SET OPERATION' }) };
+    case 'Recursive Union': return { description: m('recursiveUnion') };
+    case 'Result': return { description: m('result') };
+    case 'ProjectSet': return { description: m('projectSet') };
+    case 'Materialize': return { description: m('materialize') };
+    case 'Memoize': return { description: m('memoize') };
+    case 'ModifyTable': return { target: table, description: m('modifyTable', { op: str(n['Operation']) ?? 'Write', rel }) };
+    case 'LockRows': return { description: m('lockRows') };
+    default: return { target: table, description: m('other', { type }) };
   }
 }
 
 const DETAIL_KEYS: [key: string, label: string, fmt?: (v: unknown) => string | undefined][] = [
-  ['Hash Cond', 'join on', cond],
-  ['Merge Cond', 'join on', cond],
-  ['Join Filter', 'join filter', cond],
-  ['Index Cond', 'index condition', cond],
+  ['Hash Cond', 'joinOn', cond],
+  ['Merge Cond', 'joinOn', cond],
+  ['Join Filter', 'joinFilter', cond],
+  ['Index Cond', 'indexCond', cond],
   ['Recheck Cond', 'recheck', cond],
   ['Filter', 'filter', cond],
-  ['Group Key', 'group by', str],
-  ['Sort Key', 'sort by', str],
-  ['Presorted Key', 'already sorted by', str],
-  ['Sort Method', 'sort method', str],
+  ['Group Key', 'groupBy', str],
+  ['Sort Key', 'sortBy', str],
+  ['Presorted Key', 'presorted', str],
+  ['Sort Method', 'sortMethod', str],
 ];
 
 function convert(n: RawNode, analyzed: boolean): PlanNode {
@@ -198,27 +198,27 @@ export type ClauseId = 'WITH' | 'FROM' | 'WHERE' | 'GROUP BY' | 'HAVING' | 'WIND
 
 export interface LogicalStep {
   id: ClauseId;
+  /** SQL keywords, shown as-is in every language. */
   label: string;
-  explain: string;
   present: boolean;
   /** Rows coming out of this step, when the plan tells us. */
   rows?: number;
-  /** Extra fact, e.g. "WHERE removed 1 204 rows". */
-  note?: string;
+  /** Extra fact, e.g. "filters removed 1 204 rows". */
+  note?: Msg;
 }
 
-const STEPS: { id: ClauseId; label: string; explain: string }[] = [
-  { id: 'WITH', label: 'WITH', explain: 'Common table expressions are prepared, ready to be read like tables.' },
-  { id: 'FROM', label: 'FROM / JOIN', explain: 'The tables are read and joined into one set of rows.' },
-  { id: 'WHERE', label: 'WHERE', explain: 'Rows that fail the condition are thrown away.' },
-  { id: 'GROUP BY', label: 'GROUP BY', explain: 'Rows are collapsed into groups, and aggregates are computed.' },
-  { id: 'HAVING', label: 'HAVING', explain: 'Groups that fail the condition are thrown away.' },
-  { id: 'WINDOW', label: 'OVER (…)', explain: 'Window functions are computed. Every row stays.' },
-  { id: 'SELECT', label: 'SELECT', explain: 'The output columns and expressions are computed.' },
-  { id: 'DISTINCT', label: 'DISTINCT', explain: 'Duplicate output rows are removed.' },
-  { id: 'SET OP', label: 'UNION / INTERSECT / EXCEPT', explain: 'The result is combined with another query\'s result.' },
-  { id: 'ORDER BY', label: 'ORDER BY', explain: 'The rows are sorted.' },
-  { id: 'LIMIT', label: 'LIMIT / OFFSET', explain: 'Only some of the sorted rows are kept.' },
+const STEPS: { id: ClauseId; label: string }[] = [
+  { id: 'WITH', label: 'WITH' },
+  { id: 'FROM', label: 'FROM / JOIN' },
+  { id: 'WHERE', label: 'WHERE' },
+  { id: 'GROUP BY', label: 'GROUP BY' },
+  { id: 'HAVING', label: 'HAVING' },
+  { id: 'WINDOW', label: 'OVER (…)' },
+  { id: 'SELECT', label: 'SELECT' },
+  { id: 'DISTINCT', label: 'DISTINCT' },
+  { id: 'SET OP', label: 'UNION / INTERSECT / EXCEPT' },
+  { id: 'ORDER BY', label: 'ORDER BY' },
+  { id: 'LIMIT', label: 'LIMIT / OFFSET' },
 ];
 
 /** The words that appear outside any parentheses in an (upper-cased, comment- and string-free) statement. */
@@ -286,12 +286,12 @@ export function logicalSteps(code: string, plan?: ExplainResult): LogicalStep[] 
       const g = step('GROUP BY');
       if (clauses.has('HAVING')) {
         step('HAVING').rows ??= node.rows;
-        if (node.rowsRemoved) step('HAVING').note = `removed ${node.rowsRemoved.toLocaleString()} group${node.rowsRemoved === 1 ? '' : 's'}`;
+        if (node.rowsRemoved) step('HAVING').note = { key: 'plan.note.groupsRemoved', params: { n: node.rowsRemoved } };
         g.rows ??= node.rows + (node.rowsRemoved ?? 0);
       } else {
         g.rows ??= node.rows;
       }
-      if (!clauses.has('GROUP BY')) g.note = 'no GROUP BY: the whole input is one group';
+      if (!clauses.has('GROUP BY')) g.note = { key: 'plan.note.oneGroup' };
     }
     if (!SPINE.has(node.type) || inputs.length !== 1) break;
     node = inputs[0];
@@ -301,8 +301,8 @@ export function logicalSteps(code: string, plan?: ExplainResult): LogicalStep[] 
     target.rows = node.rows;
     if (clauses.has('WHERE')) {
       const removed = walk(node).reduce((s, n) => s + (n.rowsRemoved ?? 0), 0);
-      if (removed) target.note = `filters removed ${removed.toLocaleString()} row${removed === 1 ? '' : 's'}`;
-      if (clauses.has('FROM')) step('FROM').note = 'PostgreSQL filters while it reads, so these rows are counted after WHERE';
+      if (removed) target.note = { key: 'plan.note.rowsRemoved', params: { n: removed } };
+      if (clauses.has('FROM')) step('FROM').note = { key: 'plan.note.countedAfterWhere' };
     }
   }
   const out = steps.find((s) => s.id === 'SELECT')!;
@@ -326,13 +326,14 @@ export interface ExplainRequest {
  * so set-up statements (CREATE TABLE, INSERT…) run first in the same sandbox. `analyze: 'readOnly'` only
  * executes the statement when it can't change data (used where changes would persist, like the Playground).
  */
-export function buildExplain(script: string, opts: { keepEarlier: boolean; analyze: true | 'readOnly' }): ExplainRequest | { error: string } {
+export function buildExplain(script: string, opts: { keepEarlier: boolean; analyze: true | 'readOnly' }): ExplainRequest | { error: string; msg: Msg } {
   const statements = splitStatements(script);
   const last = statements.at(-1);
-  if (!last) return { error: 'There is no SQL to visualize yet.' };
+  if (!last) return { error: 'There is no SQL to visualize yet.', msg: { key: 'viz.empty' } };
   const first = last.head.split(' ')[0];
   if (!EXPLAINABLE.has(first)) {
-    return { error: `The visualizer explains queries (SELECT, WITH, INSERT, UPDATE, DELETE). The last statement here is ${last.head.split(' ').slice(0, 2).join(' ') || 'not a query'}.` };
+    const stmt = last.head.split(' ').slice(0, 2).join(' ');
+    return { error: `The visualizer explains queries (SELECT, WITH, INSERT, UPDATE, DELETE). The last statement here is ${stmt || 'not a query'}.`, msg: { key: 'viz.notQuery', params: { stmt: stmt || '?' } } };
   }
   const analyze = opts.analyze === true || isCursorable(last);
   const explain = `EXPLAIN (${analyze ? 'ANALYZE, BUFFERS OFF, ' : ''}FORMAT JSON) `;

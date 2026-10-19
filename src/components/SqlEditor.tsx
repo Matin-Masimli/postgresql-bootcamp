@@ -5,6 +5,7 @@ import { Prec } from '@codemirror/state';
 import { EditorView, keymap } from '@codemirror/view';
 import { setDiagnostics } from '@codemirror/lint';
 import { useManifest } from '../lib/manifest.ts';
+import { useT } from '../i18n/index.ts';
 import { darkEditorTheme, lightEditorTheme } from '../lib/editorTheme.ts';
 import { useDarkMode } from '../lib/useDarkMode.ts';
 
@@ -22,6 +23,7 @@ interface Props {
 }
 
 export default function SqlEditor({ value, onChange, onRun, error, readOnly, minHeight = '160px', onReady }: Props) {
+  const t = useT();
   const dark = useDarkMode();
   const { manifest } = useManifest();
   const viewRef = useRef<EditorView | null>(null);
@@ -83,7 +85,7 @@ export default function SqlEditor({ value, onChange, onRun, error, readOnly, min
             focus: () => view.focus(),
           });
         }}
-        aria-label="SQL editor"
+        aria-label={t('runner.editorAria')}
       />
     </div>
   );

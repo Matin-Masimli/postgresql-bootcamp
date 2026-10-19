@@ -3,11 +3,13 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { engine, runError } from '../db/client.ts';
 import type { RunOutput } from '../engine/types.ts';
+import { useT } from '../i18n/index.ts';
 import RunResults from './RunResults.tsx';
 import SqlCode from './SqlCode.tsx';
 
 /** A ```sql example with a Run button (runs sandboxed on the main dataset). */
 function RunnableSql({ code }: { code: string }) {
+  const t = useT();
   const [output, setOutput] = useState<RunOutput | null>(null);
   const [busy, setBusy] = useState(false);
   const run = async () => {
@@ -30,7 +32,7 @@ function RunnableSql({ code }: { code: string }) {
           disabled={busy}
           className="btn-primary absolute top-2 right-2 rounded-md px-2 py-0.5 text-xs"
         >
-          {busy ? 'Running…' : output ? 'Run again' : '▶ Run'}
+          {busy ? t('example.running') : output ? t('example.runAgain') : t('example.run')}
         </button>
       </div>
       {output && <RunResults output={output} sql={code} />}

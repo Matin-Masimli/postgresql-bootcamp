@@ -1,9 +1,11 @@
 import type { Column } from '../engine/types.ts';
 import { typeName } from '../engine/compare.ts';
+import { useT } from '../i18n/index.ts';
 
 const NUMERIC = new Set([20, 21, 23, 26, 700, 701, 1700, 790]);
 
 export function Cell({ value, type, highlight }: { value: string | null; type?: number; highlight?: boolean }) {
+  const t = useT();
   const hl = highlight ? 'bg-red-100 dark:bg-red-500/20 dark:text-red-200' : '';
   if (value === null) return <td className={`px-3 py-1.5 ${hl}`}><span className="rounded bg-zinc-100 px-1 font-mono text-[10px] tracking-wide text-zinc-400 italic dark:bg-zinc-800/80 dark:text-zinc-500">NULL</span></td>;
   let shown = value;
@@ -11,7 +13,7 @@ export function Cell({ value, type, highlight }: { value: string | null; type?: 
   const long = shown.length > 80;
   return (
     <td className={`px-3 py-1.5 font-mono whitespace-pre ${type !== undefined && NUMERIC.has(type) ? 'text-right' : ''} ${hl}`} title={long ? shown : undefined}>
-      {long ? `${shown.slice(0, 80)}…` : shown === '' ? <span className="text-zinc-400 italic">(empty string)</span> : shown}
+      {long ? `${shown.slice(0, 80)}…` : shown === '' ? <span className="text-zinc-400 italic">{t('results.emptyString')}</span> : shown}
     </td>
   );
 }

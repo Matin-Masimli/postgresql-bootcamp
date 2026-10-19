@@ -2,7 +2,7 @@
 // Used by the browser worker and by the Node quality gate.
 import type { PGliteInterface } from '@electric-sql/pglite';
 import { findSandboxProblems, isCursorable, splitStatements, type Statement } from './sqlScan.ts';
-import type { ResultSet, RunOutput, SqlError, StatementResult } from './types.ts';
+import type { Msg, ResultSet, RunOutput, SqlError, StatementResult } from './types.ts';
 
 export interface SequenceBaseline { sequence: string; lastValue: number }
 export interface RunOptions {
@@ -49,10 +49,10 @@ export class PracticeSession {
     const problems = findSandboxProblems(statements);
     if (problems.length) {
       const p = problems[0];
-      return { output: { statements: [], totalMs: 0, error: { message: p.message, offset: statements[p.statementIndex].start, statementIndex: p.statementIndex } } };
+      return { output: { statements: [], totalMs: 0, error: { message: p.message, msg: p.msg, offset: statements[p.statementIndex].start, statementIndex: p.statementIndex } } };
     }
     if (statements.length === 0) {
-      return { output: { statements: [], totalMs: 0, error: { message: 'Nothing to run: the editor contains no SQL statement.' } } };
+      return { output: { statements: [], totalMs: 0, error: { message: 'Nothing to run: the editor contains no SQL statement.', msg: { key: 'err.empty' } } } };
     }
     await this.pg.query('BEGIN');
     try {
@@ -76,7 +76,7 @@ export class PracticeSession {
   async runPersistent(sql: string, opts: RunOptions = {}): Promise<RunOutput> {
     const t0 = performance.now();
     const statements = splitStatements(sql);
-    if (statements.length === 0) return { statements: [], totalMs: 0, error: { message: 'Nothing to run: the editor contains no SQL statement.' } };
+    if (statements.length === 0) return { statements: [], totalMs: 0, error: { message: 'Nothing to run: the editor contains no SQL statement.', msg: { key: 'err.empty' } } };
     const out = await this.execStatements(statements, opts, false);
     out.totalMs = performance.now() - t0;
     if (/^(CREATE|DROP|ALTER) (TYPE|DOMAIN|EXTENSION)\b/m.test(statements.map((s) => s.head).join('\n'))) await this.refreshParsers();
@@ -162,7 +162,7 @@ export class PracticeSession {
       await this.pg.query('CLOSE pgb_cursor');
       if (ownTx) await this.pg.query('COMMIT');
       const capped = r.rows.length > maxRows;
-      if (capped && strict) throw Object.assign(new Error(tooManyRows(maxRows)), { code: 'TOO_MANY_ROWS' });
+      if (capped && strict) throw Object.assign(new Error(tooManyRows(maxRows)), { code: 'TOO_MANY_ROWS', msg: { key: 'err.tooManyRows', params: { max: maxRows } } });
       return {
         result: { columns: r.fields.map((f) => ({ name: f.name, dataTypeID: f.dataTypeID })), rows: capped ? r.rows.slice(0, maxRows) : r.rows },
         affected: 0,
@@ -179,7 +179,7 @@ export class PracticeSession {
   async query(sql: string, maxRows?: number): Promise<{ result?: ResultSet; affected: number; capped?: boolean }> {
     const r = await this.pg.query<(string | null)[]>(sql, [], { rowMode: 'array', parsers: this.textParsers });
     if (maxRows !== undefined && r.rows.length > maxRows) {
-      throw Object.assign(new Error(tooManyRows(maxRows)), { code: 'TOO_MANY_ROWS' });
+      throw Object.assign(new Error(tooManyRows(maxRows)), { code: 'TOO_MANY_ROWS', msg: { key: 'err.tooManyRows', params: { max: maxRows } } });
     }
     const hasResult = r.fields.length > 0;
     return {
@@ -193,10 +193,11 @@ const tooManyRows = (max: number) =>
   `The result has more than ${max.toLocaleString('en-US')} rows, which is more than the checker accepts. Check your joins (a missing join condition multiplies rows) and filters.`;
 
 export function toSqlError(e: unknown): SqlError {
-  const x = e as { message?: string; code?: string; detail?: string; hint?: string; position?: string | number };
+  const x = e as { message?: string; code?: string; detail?: string; hint?: string; position?: string | number; msg?: Msg };
   const pos = x.position !== undefined && x.position !== '' ? Number(x.position) : undefined;
   return {
     message: x.message ?? String(e),
+    msg: x.msg,
     code: x.code,
     detail: x.detail || undefined,
     hint: x.hint || undefined,

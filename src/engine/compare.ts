@@ -1,6 +1,6 @@
 // Result-set comparison: decides pass/fail and builds the diff shown to the learner.
 import type { CheckConfig } from '../../content/types.ts';
-import type { Feedback, ResultSet } from './types.ts';
+import type { Feedback, Msg, ResultSet } from './types.ts';
 
 type Row = (string | null)[];
 
@@ -76,6 +76,7 @@ export function compareResults(expected: ResultSet, actual: ResultSet, cfg: Pick
     return {
       ...base, pass: false, kind: 'columns',
       summary: `Expected ${expected.columns.length} column${expected.columns.length === 1 ? '' : 's'} (${expectedColumns.join(', ')}), but your query returned ${actual.columns.length} (${actualColumns.join(', ')}).`,
+      msg: { key: 'fb.columnCount', params: { expected: expected.columns.length, expectedList: expectedColumns.join(', '), actual: actual.columns.length, actualList: actualColumns.join(', ') } },
     };
   }
   if (cfg.columnNamesMatter) {
@@ -84,18 +85,21 @@ export function compareResults(expected: ResultSet, actual: ResultSet, cfg: Pick
       return {
         ...base, pass: false, kind: 'columns',
         summary: `Column names don't match: ${wrong.map(([e, a]) => `expected "${e}" but got "${a}"`).join('; ')}. Use AS to name the columns.`,
+        msg: { key: 'fb.columnNames', params: { pairs: wrong.map(([e, a]) => `"${a}" → "${e}"`).join(', ') } },
       };
     }
   }
 
   const info = columnInfo(expected, actual);
   const notes: string[] = [];
+  const noteMsgs: Msg[] = [];
   // Hint at type differences that usually explain value mismatches (e.g. date vs timestamptz).
   const typeGroup = (oid: number) => (NUMERIC_TYPES.has(oid) ? 'number' : [19, 25, 1042, 1043].includes(oid) ? 'text' : String(oid));
   expected.columns.forEach((c, i) => {
     const a = actual.columns[i];
     if (typeGroup(c.dataTypeID) !== typeGroup(a.dataTypeID)) {
       notes.push(`Column ${i + 1} ("${expectedColumns[i]}") is ${typeName(c.dataTypeID)} in the reference but ${typeName(a.dataTypeID)} in yours.`);
+      noteMsgs.push({ key: 'fb.typeNote', params: { n: i + 1, name: expectedColumns[i], expected: typeName(c.dataTypeID), actual: typeName(a.dataTypeID) } });
     }
   });
 
@@ -109,24 +113,30 @@ export function compareResults(expected: ResultSet, actual: ResultSet, cfg: Pick
       // Same multiset in a different order?
       const unordered = compareUnordered(expected.rows, actual.rows, info, cfg);
       if (unordered.missing.length === 0 && unordered.extra.length === 0) {
-        return { ...base, pass: false, kind: 'order', notes, summary: `All the right rows, but in the wrong order (first difference at row ${i + 1}). Check your ORDER BY, including tie-breakers.`, firstMismatch: mismatch(i, e, a, info, cfg.numericTolerance) };
+        return { ...base, pass: false, kind: 'order', notes, noteMsgs, summary: `All the right rows, but in the wrong order (first difference at row ${i + 1}). Check your ORDER BY, including tie-breakers.`, msg: { key: 'fb.order', params: { row: i + 1 } }, firstMismatch: mismatch(i, e, a, info, cfg.numericTolerance) };
       }
       return {
-        ...base, pass: false, kind: expected.rows.length !== actual.rows.length ? 'rows' : 'values', notes,
+        ...base, pass: false, kind: expected.rows.length !== actual.rows.length ? 'rows' : 'values', notes, noteMsgs,
         summary: rowSummary(expected.rows.length, actual.rows.length, `Row ${i + 1} differs.`),
+        msg: expected.rows.length !== actual.rows.length
+          ? { key: 'fb.rowsCountRow', params: { expected: expected.rows.length, actual: actual.rows.length, row: i + 1 } }
+          : { key: 'fb.rowsValuesRow', params: { expected: expected.rows.length, row: i + 1 } },
         firstMismatch: mismatch(i, e, a, info, cfg.numericTolerance),
         missing: unordered.missing.slice(0, MAX_LISTED), extra: unordered.extra.slice(0, MAX_LISTED),
       };
     }
-    return { ...base, pass: true, summary: 'Correct!' };
+    return { ...base, pass: true, summary: 'Correct!', msg: { key: 'fb.correct' } };
   }
 
   // 3. Unordered comparison.
   const { missing, extra, expectedN, actualN } = compareUnordered(expected.rows, actual.rows, info, cfg);
-  if (missing.length === 0 && extra.length === 0) return { ...base, pass: true, summary: 'Correct!', expectedRowCount: expectedN, actualRowCount: actualN };
+  if (missing.length === 0 && extra.length === 0) return { ...base, pass: true, summary: 'Correct!', msg: { key: 'fb.correct' }, expectedRowCount: expectedN, actualRowCount: actualN };
   return {
-    ...base, pass: false, kind: expectedN !== actualN ? 'rows' : 'values', notes,
+    ...base, pass: false, kind: expectedN !== actualN ? 'rows' : 'values', notes, noteMsgs,
     expectedRowCount: expectedN, actualRowCount: actualN,
+    msg: expectedN !== actualN
+      ? { key: 'fb.rowsCountSet', params: { expected: expectedN, actual: actualN, missing: missing.length, extra: extra.length } }
+      : { key: 'fb.rowsValuesSet', params: { expected: expectedN, missing: missing.length, extra: extra.length } },
     summary: rowSummary(expectedN, actualN, `${missing.length} expected row${missing.length === 1 ? ' is' : 's are'} missing and ${extra.length} row${extra.length === 1 ? ' is' : 's are'} unexpected.`),
     missing: missing.slice(0, MAX_LISTED), extra: extra.slice(0, MAX_LISTED),
   };

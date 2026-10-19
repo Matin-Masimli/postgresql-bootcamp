@@ -47,10 +47,10 @@ export async function gradeOn(s: PracticeSession, dataset: Dataset, q: Gradable,
   const sub = await evaluate(s, sql, q);
   if (sub.error) {
     const tooMany = sub.error.code === 'TOO_MANY_ROWS';
-    return { output: sub.output, feedback: { pass: false, dataset, kind: tooMany ? 'too-many-rows' : 'error', summary: tooMany ? sub.error.message : 'PostgreSQL reported an error.', error: sub.error } };
+    return { output: sub.output, feedback: { pass: false, dataset, kind: tooMany ? 'too-many-rows' : 'error', summary: tooMany ? sub.error.message : 'PostgreSQL reported an error.', msg: tooMany ? sub.error.msg : { key: 'fb.pgError' }, error: sub.error } };
   }
   if (sub.noResult) {
-    return { output: sub.output, feedback: { pass: false, dataset, kind: 'no-result', summary: 'Your last statement did not return any rows to compare. The answer must end with a query that returns the requested result.' } };
+    return { output: sub.output, feedback: { pass: false, dataset, kind: 'no-result', summary: 'Your last statement did not return any rows to compare. The answer must end with a query that returns the requested result.', msg: { key: 'fb.noResult' } } };
   }
   return { output: sub.output, feedback: { ...compareResults(expected, sub.result!, q.checkConfig), dataset } };
 }
@@ -61,7 +61,7 @@ export async function grade(sessions: Record<Dataset, PracticeSession>, q: Grada
   if (!main.feedback.pass) return main;
   const hidden = await gradeOn(sessions.hidden, 'hidden', q, sql, cache);
   if (hidden.feedback.pass) {
-    return { output: main.output, feedback: { ...main.feedback, summary: 'Correct! Your answer matches on the practice data and on the hidden check data.' } };
+    return { output: main.output, feedback: { ...main.feedback, summary: 'Correct! Your answer matches on the practice data and on the hidden check data.', msg: { key: 'fb.correctBoth' } } };
   }
   const h = hidden.feedback;
   const counts = h.expectedRowCount !== undefined && h.actualRowCount !== undefined && h.expectedRowCount !== h.actualRowCount
@@ -70,6 +70,13 @@ export async function grade(sessions: Record<Dataset, PracticeSession>, q: Grada
     output: main.output,
     feedback: {
       pass: false, dataset: 'hidden', kind: 'hidden', error: h.error,
+      msg: h.error
+        ? { key: 'fb.hiddenError', params: { message: h.error.message } }
+        : h.kind === 'order'
+          ? { key: 'fb.hiddenOrder' }
+          : counts
+            ? { key: 'fb.hiddenRowsCount', params: { expected: h.expectedRowCount!, actual: h.actualRowCount! } }
+            : { key: 'fb.hiddenRows' },
       summary: h.error
         ? `Your answer works on the practice data but fails on the hidden check data with an error: ${h.error.message}`
         : h.kind === 'order'

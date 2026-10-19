@@ -5,12 +5,12 @@ import SchemaQuickRef from '../components/SchemaQuickRef.tsx';
 import SqlEditor from '../components/SqlEditor.tsx';
 import { engine, runError } from '../db/client.ts';
 import type { RunOutput } from '../engine/types.ts';
+import { getLocale, translator, useT } from '../i18n/index.ts';
+import Rich from '../i18n/Rich.tsx';
 import { visualize, type Visualization } from '../lib/visualize.ts';
 
 const KEY = 'pgb.playground';
-const START = `-- Playground: your own copy of the practice database.
--- Changes persist until you press "Reset database", and transactions (BEGIN/COMMIT) work here.
-SELECT c.name AS country, count(*) AS customers
+const START_QUERY = `SELECT c.name AS country, count(*) AS customers
 FROM customers cu
 JOIN countries c USING (country_id)
 GROUP BY c.name
@@ -19,7 +19,9 @@ LIMIT 10;
 `;
 
 export default function PlaygroundPage() {
+  const t = useT();
   const [sql, setSql] = useState(() => {
+    const START = `${translator(getLocale())('playground.start')}\n${START_QUERY}`;
     try {
       return localStorage.getItem(KEY) ?? START;
     } catch {
@@ -70,7 +72,7 @@ export default function PlaygroundPage() {
   };
 
   const reset = async () => {
-    if (!window.confirm('Reset the playground database? Every change you made here will be lost.')) return;
+    if (!window.confirm(t('playground.confirmReset'))) return;
     setBusy('reset');
     try {
       await engine.resetPlayground();
@@ -84,31 +86,30 @@ export default function PlaygroundPage() {
   return (
     <div className="space-y-4">
       <header className="space-y-1">
-        <p className="eyebrow">Sandbox · persistent</p>
-        <h1 className="text-3xl font-semibold tracking-tight">Playground</h1>
+        <p className="eyebrow">{t('playground.eyebrow')}</p>
+        <h1 className="text-3xl font-semibold tracking-tight">{t('playground.title')}</h1>
         <p className="max-w-3xl text-sm text-zinc-600 dark:text-zinc-400">
-          Free exploration on a separate copy of the practice database. Unlike question runs, changes here persist (CREATE, INSERT, transactions…) until you reset.
-          <strong className="text-violet-600 dark:text-violet-300"> Visualize</strong> explains the last statement in your editor.
+          <Rich text={t('playground.intro')} tags={{ v: (c) => <strong className="text-violet-600 dark:text-violet-300">{c}</strong> }} />
         </p>
       </header>
       {generation !== firstGen.current && (
         <p className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
-          The database was restarted (a query ran too long), so the playground is back to its original state.
+          {t('playground.restarted')}
         </p>
       )}
       <SqlEditor value={sql} onChange={setSql} onRun={run} minHeight="220px" error={output?.error?.offset !== undefined ? { offset: output.error.offset, message: output.error.message } : null} onReady={(api) => (editor.current = api)} />
       <div className="flex flex-wrap items-center gap-2">
-        <button type="button" onClick={run} disabled={!!busy} className="btn-primary" aria-label="Run" title="Run (Ctrl/Cmd + Enter)">
-          {busy === 'run' ? 'Running…' : '▶ Run'}
+        <button type="button" onClick={run} disabled={!!busy} className="btn-primary" aria-label={t('runner.run')} title={t('runner.runTitle')}>
+          {busy === 'run' ? t('runner.running') : t('runner.run')}
         </button>
-        <button type="button" onClick={explain} disabled={!!busy} className="btn-visualize" title="Show how PostgreSQL executes the last statement">
-          {busy === 'visualize' ? 'Analyzing…' : '◈ Visualize'}
+        <button type="button" onClick={explain} disabled={!!busy} className="btn-visualize" title={t('playground.visualizeTitle')}>
+          {busy === 'visualize' ? t('runner.analyzing') : t('runner.visualize')}
         </button>
         <button type="button" onClick={reset} disabled={!!busy} className="btn-secondary">
-          {busy === 'reset' ? 'Resetting…' : 'Reset database'}
+          {busy === 'reset' ? t('playground.resetting') : t('playground.reset')}
         </button>
         <button type="button" onClick={() => setSchemaOpen(!schemaOpen)} className="btn-ghost ml-auto" aria-expanded={schemaOpen}>
-          {schemaOpen ? 'Hide schema' : 'Schema'}
+          {schemaOpen ? t('runner.hideSchema') : t('runner.schema')}
         </button>
       </div>
       {schemaOpen && <SchemaQuickRef onInsert={(t) => editor.current?.insert(t)} />}
