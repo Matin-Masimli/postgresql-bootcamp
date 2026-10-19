@@ -20,10 +20,13 @@ import t15 from './topics/15-window-basics.ts';
 import t16 from './topics/16-window-aggregate.ts';
 import t17 from './topics/17-window-ranking.ts';
 import t18 from './topics/18-window-value.ts';
+import t19 from './topics/19-subqueries.ts';
+import t20 from './topics/20-cte.ts';
+import t21 from './topics/21-views.ts';
 
 const pack: ContentPack = {
   meta,
-  topics: { 1: t01, 2: t02, 3: t03, 4: t04, 5: t05, 6: t06, 7: t07, 8: t08, 9: t09, 10: t10, 11: t11, 12: t12, 13: t13, 14: t14, 15: t15, 16: t16, 17: t17, 18: t18 },
+  topics: { 1: t01, 2: t02, 3: t03, 4: t04, 5: t05, 6: t06, 7: t07, 8: t08, 9: t09, 10: t10, 11: t11, 12: t12, 13: t13, 14: t14, 15: t15, 16: t16, 17: t17, 18: t18, 19: t19, 20: t20, 21: t21 },
   schema,
 };
 
