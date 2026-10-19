@@ -4,6 +4,8 @@ A self-paced course that teaches PostgreSQL by having you write real SQL against
 
 **Live app:** https://matin-masimli.github.io/postgresql-bootcamp/
 
+**Project guide:** a plain-language explanation of how the whole project works, with diagrams, followed by a technical deep dive. [English](docs/PROJECT_GUIDE.en.md) · [Azərbaycanca](docs/PROJECT_GUIDE.az.md)
+
 ## What's inside
 
 - **21 topics** in learning order, from `SELECT` to window functions, recursive CTEs and views. Each topic has an explanation with runnable examples, 3–6 checked source links, and a printable handbook.
@@ -13,7 +15,9 @@ A self-paced course that teaches PostgreSQL by having you write real SQL against
   - *predict the output*: choose the right result table;
   - *concept*: multiple choice.
 - **Automatic checking.** Your answer runs on the practice database and then on a hidden database with different data, so a hard-coded answer doesn't pass. DDL and DML answers are checked by what they *do*: the checker inserts test rows, tries to break constraints, and inspects the catalog.
-- **Mixed review** (spaced repetition of questions you got wrong), a **final exam**, a free **Playground**, the **schema** with an ER diagram, and **progress** tracking.
+- **Mixed review** (random questions from the topics you've completed, unsolved ones first), a timed **final exam**, a free **Playground**, the **schema** with an ER diagram, and **progress** tracking.
+- **Query visualizer:** shows how PostgreSQL executes a query (the plan tree and the logical order of its clauses).
+- **Two languages:** English and Azerbaijani. The interface, lessons, questions and feedback are translated. SQL, table, column and function names stay in English.
 
 ## The practice database
 
@@ -78,8 +82,10 @@ Then open http://localhost:5173. `build:db` writes the two database snapshots to
   - Every Run or Check is wrapped in `BEGIN … ROLLBACK` and fetched through a cursor, so at most 50k rows come back.
   - Statements are run one by one.
   - Results are compared as multisets or sets, or in order, with numeric tolerance and NULL handling.
-- `content/`: topics and questions as typed TypeScript objects, validated with zod.
+- `content/`: topics and questions as typed TypeScript objects, validated with zod. `content/az/` holds the Azerbaijani translation (prose only).
+- `src/i18n/`: interface dictionaries (`en.ts` is the source, `az.ts` must cover every key).
 - `scripts/db/`: the schema, the seeded data generator, the edge-case assertions and the snapshot builder.
+- `docs/PROJECT_GUIDE.en.md`, `docs/PROJECT_GUIDE.az.md`: the full project guide.
 - `docs/engine-notes.md`: PGlite behaviour that the engine depends on.
 
 ## Deployment
