@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import ErDiagram from '../components/ErDiagram.tsx';
+import PageHeader from '../components/PageHeader.tsx';
 import { useContent } from '../i18n/content.ts';
 import { useT } from '../i18n/index.ts';
 import Rich from '../i18n/Rich.tsx';
@@ -24,37 +25,39 @@ export default function SchemaPage() {
   const scrollTo = (name: string) => document.getElementById(`table-${name}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   return (
-    <div className="space-y-6">
-      <section>
-        <h1 className="text-3xl font-semibold tracking-tight">{t('schema.title')}</h1>
-        <p className="mt-1 max-w-3xl text-zinc-600 dark:text-zinc-400">
+    <div className="space-y-10">
+      <PageHeader
+        eyebrow={t('schema.eyebrow')}
+        title={t('schema.title')}
+        intro={
           <Rich
             text={t('schema.intro', { tables: manifest.tables.length, rows: totalRows, version: manifest.postgresVersion, start: manifest.dataStart, end: manifest.referenceDate })}
             tags={{ b: (c) => <strong className="font-medium text-zinc-800 dark:text-zinc-200">{c}</strong> }}
           />
-        </p>
-        <div className="mt-3 max-w-3xl rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-700/60 dark:bg-amber-500/10 dark:text-amber-200">
+        }
+      >
+        <div className="max-w-3xl rounded-xl border border-amber-300/70 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
           <Rich text={t('schema.refBox', { date: manifest.referenceDate })} />
         </div>
-      </section>
+      </PageHeader>
 
       <section>
-        <h2 className="mb-2 text-lg font-semibold">{t('schema.relationships')}</h2>
-        <p className="mb-2 text-sm text-zinc-500">{t('schema.relHelp')}</p>
-        <div className="overflow-x-auto rounded-lg border border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950">
+        <h2 className="text-xl font-semibold tracking-tight">{t('schema.relationships')}</h2>
+        <p className="mt-1 mb-3 text-sm text-zinc-500">{t('schema.relHelp')}</p>
+        <div className="panel overflow-x-auto">
           <ErDiagram tables={manifest.tables} onSelect={scrollTo} />
         </div>
       </section>
 
       <section className="space-y-4">
         <div className="flex flex-wrap items-center gap-3">
-          <h2 className="text-lg font-semibold">{t('schema.tables')}</h2>
+          <h2 className="text-xl font-semibold tracking-tight">{t('schema.tables')}</h2>
           <input
             type="search"
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
             placeholder={t('schema.filter')}
-            className="ml-auto w-full rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm sm:w-64 dark:border-zinc-700 dark:bg-zinc-900"
+            className="field ml-auto w-full px-3 py-2 sm:w-72"
           />
         </div>
         {tables.length === 0 && <p className="text-sm text-zinc-500">{t('schema.noMatch', { q: filter })}</p>}
@@ -77,7 +80,7 @@ function TableCard({ table: t, highlight }: { table: TableMeta; highlight: strin
   const compositePk = t.constraints.find((c) => c.type === 'p' && c.columns.length > 1);
 
   return (
-    <article id={`table-${t.name}`} className="scroll-mt-20 rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+    <article id={`table-${t.name}`} className="panel scroll-mt-20 overflow-hidden">
       <header className="border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
         <div className="flex flex-wrap items-baseline gap-x-3">
           <h3 className="font-mono text-base font-semibold">{t.name}</h3>
@@ -86,7 +89,8 @@ function TableCard({ table: t, highlight }: { table: TableMeta; highlight: strin
         {t.comment && <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{content.schemaComment(t.name, t.comment)}</p>}
       </header>
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[640px] text-left text-sm">
+        <table className="w-full min-w-[640px] table-fixed text-left text-sm">
+          <colgroup><col className="w-[22%]" /><col className="w-[24%]" /><col className="w-[24%]" /><col /></colgroup>
           <thead className="text-xs uppercase tracking-wide text-zinc-500">
             <tr>
               <th className="px-4 py-2 font-medium">{tr('schema.col.column')}</th>
@@ -98,12 +102,12 @@ function TableCard({ table: t, highlight }: { table: TableMeta; highlight: strin
           <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
             {t.columns.map((c) => (
               <tr key={c.name} className={highlight && c.name.includes(highlight) ? 'bg-sky-50 dark:bg-sky-950/40' : undefined}>
-                <td className="px-4 py-1.5 font-mono whitespace-nowrap">{c.name}</td>
+                <td className="truncate px-4 py-1.5 font-mono" title={c.name}>{c.name}</td>
                 <td className="px-4 py-1.5 font-mono text-xs whitespace-nowrap text-zinc-600 dark:text-zinc-400">
                   {c.type}
                   {c.nullable ? '' : <span className="ml-1.5 text-zinc-400">NOT NULL</span>}
                 </td>
-                <td className="px-4 py-1.5 whitespace-nowrap">
+                <td className="px-4 py-1.5">
                   {pk.has(c.name) && <Badge tone="amber">PK</Badge>}
                   {fks.has(c.name) && <Badge tone="sky">FK → {fks.get(c.name)}</Badge>}
                   {uniqueCols.has(c.name) && <Badge tone="zinc">UNIQUE</Badge>}

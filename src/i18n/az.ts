@@ -32,6 +32,9 @@ export const az: Dict = {
   'nav.progress': 'İrəliləyiş',
   'nav.homeAria': 'PostgreSQL Bootcamp ana səhifə',
   'nav.language': 'Dil',
+  'nav.menu': 'Menyu',
+  'nav.closeMenu': 'Menyunu bağla',
+  'nav.breadcrumb': 'Naviqasiya yolu',
   'theme.toLight': 'İşıqlı rejimə keç',
   'theme.toDark': 'Qaranlıq rejimə keç',
   'theme.light': 'İşıqlı rejim',
@@ -41,7 +44,9 @@ export const az: Dict = {
   'engine.restarting': 'Verilənlər bazası yenidən başladılır…',
   'engine.error': 'Verilənlər bazası xətası: {detail}',
   'footer.text': 'Bu tabda WebAssembly-yə kompilyasiya olunmuş real PostgreSQL 18 işləyir · irəliləyişiniz brauzerinizdə saxlanılır',
-  'app.notFound': 'Səhifə tapılmadı.',
+  'app.notFound': 'Səhifə tapılmadı',
+  'app.notFoundText': 'Axtardığınız səhifə mövcud deyil və ya yeri dəyişib.',
+  'app.backHome': 'Kursa qayıt',
 
   // ── shared labels
   'difficulty.easy': 'asan',
@@ -335,6 +340,7 @@ export const az: Dict = {
   'schema.insert': 'əlavə et',
   'schema.insertAria': '{name} əlavə et',
   'schema.title': 'Məşq verilənlər bazası',
+  'schema.eyebrow': 'Arayış',
   'schema.intro': '<b>Atlas Mercantile</b> uydurma onlayn pərakəndə satış şirkətidir. Bazada {tables} cədvəl və {rows} sətir var, PostgreSQL {version} üzərində işləyir. Verilənlər {start} – {end} dövrünü əhatə edir və bütün vaxt dəyərləri UTC-də saxlanılır.',
   'schema.refBox': "<b>İstinad tarixi: {date}.</b> Bunu \"bu gün\" kimi qəbul edin. Suallar heç vaxt <code>CURRENT_DATE</code> və ya <code>now()</code> istifadə etmir, çünki cavablar təkrarlana bilən qalmalıdır. Onların əvəzinə <code>DATE '{date}'</code> yazın.",
   'schema.relationships': 'Əlaqələr',
@@ -364,8 +370,11 @@ export const az: Dict = {
   // ── review
   'review.title': 'Qarışıq təkrar',
   'review.intro': 'Tamamladığınız mövzulardan (suallarının ən azı yarısı həll edilmiş) ən çox {n} təsadüfi sual. Hələ həll etmədiyiniz suallar birinci gəlir.',
-  'review.none': 'Hələ tamamlanmış mövzu yoxdur. Bir mövzunun suallarının ən azı yarısını həll edin, o burada görünəcək. <a>Mövzu seçin</a>.',
-  'review.drawing': 'Suallar bu mövzulardan seçilir: {list}.',
+  'review.eyebrow': 'Məşq · qarışıq',
+  'review.noneTitle': 'Hələ təkrar ediləcək heç nə yoxdur',
+  'review.noneText': 'Mövzunun suallarının ən azı yarısını həll edin, o burada görünəcək.',
+  'review.pickTopic': 'Mövzu seçin',
+  'review.drawing': 'Suallar bu mövzulardan seçilir:',
   'review.start': 'Təkrara başla',
   'review.previous': '← Əvvəlki',
   'review.next': 'Növbəti →',
@@ -375,6 +384,8 @@ export const az: Dict = {
 
   // ── exam
   'exam.title': 'Yekun imtahan',
+  'exam.eyebrow': 'Özünüzü yoxlayın',
+  'exam.setup': 'İmtahanı qurun',
   'exam.intro': 'Bütün mövzulardan vaxtla məhdud, qarışıq imtahan; əvvəlcə müsahibə və çətin suallar. İmtahan zamanı ipucu və həll yoxdur. Cavablar səssizcə qiymətləndirilir, nəticənizi sonda görürsünüz. Vaxt bitənə qədər cavabı yenidən göndərə bilərsiniz.',
   'exam.available': '{n} sual mövcuddur ({hard} çətin və ya müsahibə sualı).',
   'exam.questions': 'Suallar',
@@ -392,6 +403,7 @@ export const az: Dict = {
 
   // ── progress
   'progress.title': 'İrəliləyiş',
+  'progress.eyebrow': 'Öyrənməniz',
   'progress.solved': 'Həll edilib',
   'progress.attempted': 'Cəhd edilib',
   'progress.streak': 'Ardıcıl günlər',
@@ -401,8 +413,8 @@ export const az: Dict = {
   'progress.moveText': 'İrəliləyiş yalnız bu brauzerdə saxlanılır. Onu JSON faylı kimi ixrac edin, sonra həmin faylı digər cihazınızda idxal edin. SQL qaralamalarınız da daxildir.',
   'progress.export': 'İrəliləyişi ixrac et',
   'progress.importMode': 'İdxal rejimi',
-  'progress.importMerge': 'İdxal: birləşdir (hər ikisinin ən yaxşısını saxla)',
-  'progress.importReplace': 'İdxal: bu cihazdakı irəliləyişi əvəz et',
+  'progress.importMerge': 'Bu cihazdakı ilə birləşdir',
+  'progress.importReplace': 'Bu cihazdakı irəliləyişi əvəz et',
   'progress.importFile': 'Fayl idxal et…',
   'progress.importedMerge': '{n} sual üzrə irəliləyiş idxal olundu (bu cihazdakı irəliləyişlə birləşdirildi).',
   'progress.importedReplace': '{n} sual üzrə irəliləyiş idxal olundu (bu cihazdakı irəliləyiş əvəz olundu).',
@@ -414,6 +426,9 @@ export const az: Dict = {
   // ── handbook
   'handbook.none': 'Bu mövzu üçün hələ kitabça yoxdur.',
   'handbook.title': 'Həllər kitabçası: {title}',
+  'handbook.eyebrow': 'Həllər',
+  'handbook.contents': 'Bu kitabçada',
+  'handbook.print': 'Çap et',
   'handbook.spoiler': 'Diqqət, spoyler: bu səhifədə bütün cavablar var. Əvvəlcə sualları özünüz həll edin.',
   'handbook.broken': 'Səhv sorğu',
   'handbook.reference': 'Nümunə həll',
@@ -423,6 +438,7 @@ export const az: Dict = {
 
   // ── diagnostics
   'diag.title': 'Diaqnostika',
+  'diag.eyebrow': 'Sistem yoxlaması',
   'diag.intro': 'Hər hazır snapshot-dan brauzerdə yeni PostgreSQL işə salır və vaxtını ölçür. İlk ziyarətdə PostgreSQL WebAssembly runtime-ı da yüklənir və kompilyasiya olunur (sıxılmamış təxminən 17 MB). Sonrakı ziyarətlərdə brauzer keşi istifadə olunur.',
   'diag.readyIn': 'Əsas verilənlər bazasının hazır olmasına qədər keçən vaxt (worker-in başlaması + yükləmə + işə düşmə): <b>{time}</b>',
   'diag.gzipped': '{size} (gzip ilə)',

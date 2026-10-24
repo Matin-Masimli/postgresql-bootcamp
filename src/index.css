@@ -183,6 +183,20 @@ pre {
 }
 .dark .md blockquote { background: rgb(59 125 255 / 0.08); color: var(--color-zinc-300); }
 
+/* Print (the solution handbook has a Print button): plain white pages, no decoration. */
+@media print {
+  body { background: #fff; }
+  body::before { display: none; }
+  main { padding-top: 0; }
+  .panel { box-shadow: none; backdrop-filter: none; background: #fff; }
+  pre, table { break-inside: avoid; }
+}
+
+/* Respect reduced-motion preferences for decorative animation. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
+
 /* CodeMirror: let the panel own the background and radius. */
 .cm-editor { background: transparent !important; }
 .cm-editor.cm-focused { outline: none !important; }

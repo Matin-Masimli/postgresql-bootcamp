@@ -36,7 +36,6 @@ export default function QuestionRunner({ question, mode = 'practice', onExamSubm
   const t = useT();
   const TOPICS = useContent().topics;
   const p = useProgress().questions[question.id];
-  const topicTitle = TOPICS.find((x) => x.id === question.topic)?.title;
   useEffect(() => {
     // Warm up: main first, then the hidden dataset so the first Check is fast.
     void engine.ensure('main').then(() => engine.ensure('hidden')).catch(() => undefined);
@@ -59,8 +58,7 @@ export default function QuestionRunner({ question, mode = 'practice', onExamSubm
             </span>
           ) : null}
         </div>
-        <h1 className="text-3xl font-semibold tracking-tight">{question.title}</h1>
-        {mode === 'practice' && topicTitle && <p className="eyebrow">{t('runner.topicLabel', { n: String(question.topic).padStart(2, '0'), title: topicTitle })}</p>}
+        <h1 className="text-3xl font-semibold tracking-tight text-balance">{question.title}</h1>
       </header>
       {isQueryQuestion(question) ? (
         <QueryRunner key={question.id} q={question} mode={mode} onExamSubmit={onExamSubmit} examAnswered={examAnswered} />
@@ -253,15 +251,16 @@ function QueryRunner({ q, mode, onExamSubmit, examAnswered }: { q: QueryQuestion
 
   return (
     <>
-      <div className="flex gap-1 border-b border-zinc-200 lg:hidden dark:border-zinc-800" role="tablist">
+      <div className={`${mode === 'practice' ? 'sticky top-14 z-20' : ''} -mx-4 flex gap-1 border-b border-zinc-200 bg-zinc-50/90 px-4 backdrop-blur lg:hidden dark:border-zinc-800 dark:bg-zinc-950/90`} role="tablist">
         {(['task', 'sql', 'result'] as const).map((x) => (
           <button key={x} type="button" role="tab" aria-selected={tab === x} onClick={() => setTab(x)} className={`-mb-px border-b-2 px-3 py-2 text-sm ${tab === x ? 'border-sky-500 font-medium text-sky-700 dark:text-sky-300' : 'border-transparent text-zinc-500'}`}>
             {x === 'task' ? t('runner.tab.task') : x === 'sql' ? t('runner.tab.sql') : feedback ? (feedback.pass ? t('runner.tab.resultOk') : t('runner.tab.resultBad')) : t('runner.tab.result')}
           </button>
         ))}
       </div>
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
-        <section className={tab === 'task' ? '' : 'hidden lg:block'}>{taskPanel}</section>
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+        {/* On wide screens the task stays in view while results scroll; it scrolls on its own if taller than the screen. */}
+        <section className={`${tab === 'task' ? '' : 'hidden lg:block'} lg:sticky lg:top-20 lg:max-h-[calc(100dvh-6.5rem)] lg:self-start lg:overflow-y-auto lg:pb-1 lg:[scrollbar-width:thin]`}>{taskPanel}</section>
         <div className="space-y-4">
           <section className={tab === 'sql' ? '' : 'hidden lg:block'}>{sqlPanel}</section>
           <section className={tab === 'result' ? '' : 'hidden lg:block'}>{resultPanel}</section>
@@ -314,23 +313,33 @@ function ChoiceRunner({ q, mode, onExamSubmit, examAnswered }: { q: PredictQuest
     else onExamSubmit?.(choice === q.correctOption);
   };
 
+  // Short text answers sit in two columns; tables and long answers take the full width.
+  const compact = q.type === 'concept-mc' && q.options.every((o) => 'text' in o && o.text.length <= 48);
+
   return (
-    <div className="space-y-4">
-      <Markdown>{q.prompt}</Markdown>
+    <div className="max-w-3xl space-y-5">
+      <div className="text-[15px]"><Markdown>{q.prompt}</Markdown></div>
       {q.type === 'predict-output' && <SqlCode code={q.referenceSolution} />}
-      <fieldset className="space-y-2">
+      <fieldset className={`grid gap-2.5 ${compact ? 'sm:grid-cols-2' : ''}`}>
         <legend className="sr-only">{t('runner.options')}</legend>
         {q.options.map((o, i) => {
           const state = reveal ? (i === q.correctOption ? 'correct' : i === submitted ? 'wrong' : '') : '';
+          const letter = String.fromCharCode(65 + i);
+          const selected = choice === i;
           return (
             <label
               key={i}
-              className={`flex cursor-pointer gap-3 rounded-xl border p-3 transition ${state === 'correct' ? 'border-emerald-400 bg-emerald-50 dark:border-emerald-500/50 dark:bg-emerald-500/10' : state === 'wrong' ? 'border-red-300 bg-red-50 dark:border-red-500/40 dark:bg-red-500/10' : choice === i ? 'border-sky-500 bg-sky-50 ring-4 ring-sky-500/10 dark:bg-sky-500/10' : 'border-zinc-200 bg-white/70 hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900/50 dark:hover:border-zinc-700'}`}
+              className={`group flex cursor-pointer items-start gap-3 rounded-xl border p-3.5 transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-sky-500 ${reveal ? 'cursor-default' : ''} ${state === 'correct' ? 'border-emerald-400 bg-emerald-50 dark:border-emerald-500/50 dark:bg-emerald-500/10' : state === 'wrong' ? 'border-red-300 bg-red-50 dark:border-red-500/40 dark:bg-red-500/10' : selected ? 'border-sky-500 bg-sky-50 shadow-sm shadow-sky-500/10 dark:bg-sky-500/10' : 'border-zinc-200 bg-white/70 hover:border-sky-300 hover:bg-white dark:border-zinc-800 dark:bg-zinc-900/50 dark:hover:border-zinc-600 dark:hover:bg-zinc-900'}`}
             >
-              <input type="radio" name={`opt-${q.id}`} aria-label={t('runner.optionAria', { letter: String.fromCharCode(65 + i) })} checked={choice === i} onChange={() => setChoice(i)} className="mt-1" disabled={reveal} />
-              <span className="min-w-0 flex-1">
-                <span className="mr-1 font-medium">{String.fromCharCode(65 + i)}.</span>
-                {'text' in o ? <Markdown>{o.text}</Markdown> : <span className="mt-1 block"><ResultTable columns={o.table.columns} rows={o.table.rows} numbered={false} maxHeight="220px" /></span>}
+              <input type="radio" name={`opt-${q.id}`} aria-label={t('runner.optionAria', { letter })} checked={selected} onChange={() => setChoice(i)} className="sr-only" disabled={reveal} />
+              <span
+                aria-hidden
+                className={`grid size-7 shrink-0 place-items-center rounded-lg border font-mono text-xs font-semibold transition ${state === 'correct' ? 'border-emerald-500 bg-emerald-500 text-white' : state === 'wrong' ? 'border-red-500 bg-red-500 text-white' : selected ? 'border-sky-500 bg-sky-500 text-white' : 'border-zinc-300 text-zinc-500 group-hover:border-sky-400 group-hover:text-sky-600 dark:border-zinc-700 dark:text-zinc-400 dark:group-hover:text-sky-300'}`}
+              >
+                {state === 'correct' ? '✓' : state === 'wrong' ? '✗' : letter}
+              </span>
+              <span className="min-w-0 flex-1 pt-0.5">
+                {'text' in o ? <Markdown>{o.text}</Markdown> : <ResultTable columns={o.table.columns} rows={o.table.rows} numbered={false} maxHeight="220px" fixed />}
               </span>
             </label>
           );

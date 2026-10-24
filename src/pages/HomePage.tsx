@@ -60,7 +60,8 @@ function Terminal() {
   const { text, demo, done } = useTypewriter();
   return (
     <div className="relative">
-      <div aria-hidden className="absolute -inset-6 rounded-[2rem] bg-linear-to-br from-sky-500/25 via-violet-500/20 to-cyan-400/10 blur-2xl" />
+      {/* The glow stays inside the viewport on narrow screens (it would otherwise widen the page). */}
+      <div aria-hidden className="absolute -inset-y-6 inset-x-0 rounded-[2rem] bg-linear-to-br from-sky-500/25 via-violet-500/20 to-cyan-400/10 blur-2xl lg:-inset-x-6" />
       <div className="relative overflow-hidden rounded-2xl border border-zinc-200 bg-white/90 shadow-2xl shadow-sky-900/10 dark:border-zinc-700/70 dark:bg-zinc-900/80 dark:shadow-black/50">
         <div className="flex items-center gap-1.5 border-b border-zinc-200 px-4 py-2.5 dark:border-zinc-800">
           <span className="size-2.5 rounded-full bg-red-400/80" />

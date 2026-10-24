@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import PageHeader from '../components/PageHeader.tsx';
 import QueryVisualizer from '../components/QueryVisualizer.tsx';
 import RunResults from '../components/RunResults.tsx';
 import SchemaQuickRef from '../components/SchemaQuickRef.tsx';
@@ -84,14 +85,12 @@ export default function PlaygroundPage() {
   };
 
   return (
-    <div className="space-y-4">
-      <header className="space-y-1">
-        <p className="eyebrow">{t('playground.eyebrow')}</p>
-        <h1 className="text-3xl font-semibold tracking-tight">{t('playground.title')}</h1>
-        <p className="max-w-3xl text-sm text-zinc-600 dark:text-zinc-400">
-          <Rich text={t('playground.intro')} tags={{ v: (c) => <strong className="text-violet-600 dark:text-violet-300">{c}</strong> }} />
-        </p>
-      </header>
+    <div className="space-y-5">
+      <PageHeader
+        eyebrow={t('playground.eyebrow')}
+        title={t('playground.title')}
+        intro={<Rich text={t('playground.intro')} tags={{ v: (c) => <strong className="text-violet-600 dark:text-violet-300">{c}</strong> }} />}
+      />
       {generation !== firstGen.current && (
         <p className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
           {t('playground.restarted')}

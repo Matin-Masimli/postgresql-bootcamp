@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
 import type { Topic } from '../../content/types.ts';
+import PageHeader, { EmptyState } from '../components/PageHeader.tsx';
 import QuestionRunner from '../components/QuestionRunner.tsx';
 import { useContent } from '../i18n/content.ts';
 import { useT } from '../i18n/index.ts';
-import Rich from '../i18n/Rich.tsx';
 import { readSession, shuffle, writeSession } from '../lib/session.ts';
 import { useProgress, type ProgressData } from '../progress/store.ts';
 
@@ -43,39 +43,56 @@ export default function ReviewPage() {
       return null;
     }
     const go = (index: number) => save({ ...session, index });
+    const topicMeta = content.topics.find((m) => m.id === q.topic);
     const nav = (
-      <nav className="flex items-center justify-between border-t border-zinc-200 pt-4 text-sm dark:border-zinc-800">
-        <button type="button" disabled={session.index === 0} onClick={() => go(session.index - 1)} className="hover:underline disabled:opacity-40">{t('review.previous')}</button>
-        <span className="text-zinc-500">{t('review.counter', { i: session.index + 1, n: session.ids.length })}</span>
-        {session.index + 1 < session.ids.length
-          ? <button type="button" onClick={() => go(session.index + 1)} className="hover:underline">{t('review.next')}</button>
-          : <button type="button" onClick={() => save(null)} className="hover:underline">{t('review.finish')}</button>}
+      <nav className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 border-t border-zinc-200 pt-5 text-sm dark:border-zinc-800">
+        <div><button type="button" disabled={session.index === 0} onClick={() => go(session.index - 1)} className="btn-ghost">{t('review.previous')}</button></div>
+        <span className="font-mono text-xs text-zinc-500 tabular-nums">{t('review.counter', { i: session.index + 1, n: session.ids.length })}</span>
+        <div className="text-right">
+          {session.index + 1 < session.ids.length
+            ? <button type="button" onClick={() => go(session.index + 1)} className="btn-secondary">{t('review.next')}</button>
+            : <button type="button" onClick={() => save(null)} className="btn-primary">{t('review.finish')}</button>}
+        </div>
       </nav>
     );
     return (
-      <div className="space-y-2">
-        <p className="flex items-center text-sm text-zinc-500">
-          {t('review.title')}
-          <button type="button" onClick={() => save(null)} className="ml-auto text-xs hover:underline">{t('review.end')}</button>
-        </p>
+      <div className="space-y-3">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+          <span className="eyebrow">{t('review.title')}</span>
+          {topicMeta && <span className="text-zinc-500">{t('runner.topicLabel', { n: String(topicMeta.id).padStart(2, '0'), title: topicMeta.title })}</span>}
+          <span className="ml-auto flex items-center gap-3">
+            <span className="flex gap-1" aria-hidden>
+              {session.ids.map((id, k) => <span key={id} className={`h-1.5 w-4 rounded-full ${k === session.index ? 'bg-sky-500' : k < session.index ? 'bg-sky-500/40' : 'bg-zinc-200 dark:bg-zinc-800'}`} />)}
+            </span>
+            <button type="button" onClick={() => save(null)} className="btn-ghost text-xs">{t('review.end')}</button>
+          </span>
+        </div>
         <QuestionRunner key={q.id} question={q} nav={nav} />
       </div>
     );
   }
 
   return (
-    <div className="max-w-2xl space-y-4">
-      <h1 className="text-3xl font-semibold tracking-tight">{t('review.title')}</h1>
-      <p className="text-zinc-600 dark:text-zinc-400">{t('review.intro', { n: SIZE })}</p>
+    <div className="max-w-3xl space-y-8">
+      <PageHeader eyebrow={t('review.eyebrow')} title={t('review.title')} intro={t('review.intro', { n: SIZE })} />
       {topics.length === 0 ? (
-        <p className="rounded-md border border-zinc-200 bg-white p-4 text-sm dark:border-zinc-800 dark:bg-zinc-900">
-          <Rich text={t('review.none')} tags={{ a: (c) => <Link to="/" className="text-sky-700 underline dark:text-sky-400">{c}</Link> }} />
-        </p>
+        <EmptyState
+          icon="↻"
+          title={t('review.noneTitle')}
+          text={t('review.noneText')}
+          action={<Link to="/" className="btn-primary px-4 py-2">{t('review.pickTopic')} <span aria-hidden>→</span></Link>}
+        />
       ) : (
-        <>
-          <p className="text-sm">{t('review.drawing', { list: topics.map((x) => content.topics.find((m) => m.id === x.id)?.title).join(', ') })}</p>
-          <button type="button" onClick={start} className="btn-primary px-4 py-2">{t('review.start')}</button>
-        </>
+        <section className="panel space-y-4 p-5">
+          <p className="text-sm text-zinc-600 dark:text-zinc-400">{t('review.drawing')}</p>
+          <ul className="flex flex-wrap gap-2">
+            {topics.map((x) => {
+              const m = content.topics.find((mm) => mm.id === x.id);
+              return <li key={x.id} className="chip !font-sans !text-xs">{String(x.id).padStart(2, '0')} · {m?.title}</li>;
+            })}
+          </ul>
+          <button type="button" onClick={start} className="btn-primary px-4 py-2">{t('review.start')} <span aria-hidden>→</span></button>
+        </section>
       )}
     </div>
   );

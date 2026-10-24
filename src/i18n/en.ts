@@ -19,6 +19,9 @@ export const en = {
   'nav.progress': 'Progress',
   'nav.homeAria': 'PostgreSQL Bootcamp home',
   'nav.language': 'Language',
+  'nav.menu': 'Menu',
+  'nav.closeMenu': 'Close menu',
+  'nav.breadcrumb': 'Breadcrumb',
   'theme.toLight': 'Switch to light mode',
   'theme.toDark': 'Switch to dark mode',
   'theme.light': 'Light mode',
@@ -28,7 +31,9 @@ export const en = {
   'engine.restarting': 'Restarting database…',
   'engine.error': 'Database error: {detail}',
   'footer.text': 'Real PostgreSQL 18, compiled to WebAssembly, running in this tab · progress stays in your browser',
-  'app.notFound': 'Page not found.',
+  'app.notFound': 'Page not found',
+  'app.notFoundText': "The page you're looking for doesn't exist or has moved.",
+  'app.backHome': 'Back to the course',
 
   // ── shared labels
   'difficulty.easy': 'easy',
@@ -324,6 +329,7 @@ export const en = {
   'schema.insert': 'insert',
   'schema.insertAria': 'Insert {name}',
   'schema.title': 'Practice database',
+  'schema.eyebrow': 'Reference',
   'schema.intro': '<b>Atlas Mercantile</b> is a fictional online retailer. It has {tables} tables and {rows} rows, running on PostgreSQL {version}. The data spans {start} to {end}, and all timestamps are stored in UTC.',
   'schema.refBox': "<b>Reference date: {date}.</b> Treat this as \"today\". Questions never use <code>CURRENT_DATE</code> or <code>now()</code>, because answers have to stay reproducible. Write <code>DATE '{date}'</code> instead.",
   'schema.relationships': 'Relationships',
@@ -353,8 +359,11 @@ export const en = {
   // ── review
   'review.title': 'Mixed review',
   'review.intro': "Up to {n} random questions from the topics you've completed (at least half of their questions solved). Questions you haven't solved yet come first.",
-  'review.none': "No completed topics yet. Solve at least half of a topic's questions and it will show up here. <a>Pick a topic</a>.",
-  'review.drawing': 'Drawing from: {list}.',
+  'review.eyebrow': 'Practice · mixed',
+  'review.noneTitle': 'Nothing to review yet',
+  'review.noneText': "Solve at least half of a topic's questions and it will show up here.",
+  'review.pickTopic': 'Choose a topic',
+  'review.drawing': 'Questions are drawn from these topics:',
   'review.start': 'Start review',
   'review.previous': '← Previous',
   'review.next': 'Next →',
@@ -364,6 +373,8 @@ export const en = {
 
   // ── exam
   'exam.title': 'Final exam',
+  'exam.eyebrow': 'Test yourself',
+  'exam.setup': 'Set up your exam',
   'exam.intro': 'A timed, mixed exam drawn from all topics, interview and hard questions first. No hints and no solutions during the exam. Answers are graded silently, and you see your score at the end. You can resubmit an answer until time runs out.',
   'exam.available': '{n} questions available ({hard} hard or interview).',
   'exam.questions': 'Questions',
@@ -381,6 +392,7 @@ export const en = {
 
   // ── progress
   'progress.title': 'Progress',
+  'progress.eyebrow': 'Your learning',
   'progress.solved': 'Solved',
   'progress.attempted': 'Attempted',
   'progress.streak': 'Day streak',
@@ -390,8 +402,8 @@ export const en = {
   'progress.moveText': 'Progress is stored in this browser only. Export it as a JSON file, then import that file on your other device. Drafts of your SQL are included.',
   'progress.export': 'Export progress',
   'progress.importMode': 'Import mode',
-  'progress.importMerge': 'Import: merge (keep the best of both)',
-  'progress.importReplace': "Import: replace this device's progress",
+  'progress.importMerge': 'Merge with this device',
+  'progress.importReplace': "Replace this device's progress",
   'progress.importFile': 'Import file…',
   'progress.importedMerge': "Imported progress for {n} questions (merged with this device's progress).",
   'progress.importedReplace': "Imported progress for {n} questions (replacing this device's progress).",
@@ -403,6 +415,9 @@ export const en = {
   // ── handbook
   'handbook.none': 'No handbook for this topic yet.',
   'handbook.title': 'Solution handbook: {title}',
+  'handbook.eyebrow': 'Solutions',
+  'handbook.contents': 'In this handbook',
+  'handbook.print': 'Print',
   'handbook.spoiler': 'Spoiler warning: this page contains every answer. Try the questions first.',
   'handbook.broken': 'Broken query',
   'handbook.reference': 'Reference solution',
@@ -412,6 +427,7 @@ export const en = {
 
   // ── diagnostics
   'diag.title': 'Diagnostics',
+  'diag.eyebrow': 'System check',
   'diag.intro': 'Boots a fresh in-browser PostgreSQL from each prebuilt snapshot and times it. The first visit also downloads and compiles the PostgreSQL WebAssembly runtime (about 17 MB uncompressed). Later visits use the browser cache.',
   'diag.readyIn': 'Time until the main database was ready (worker start + download + boot): <b>{time}</b>',
   'diag.gzipped': '{size} (gzipped)',

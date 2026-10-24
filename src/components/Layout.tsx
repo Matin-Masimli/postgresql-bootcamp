@@ -81,21 +81,29 @@ export default function Layout() {
   const t = useT();
   const [dark, toggleTheme] = useTheme();
   const { pathname } = useLocation();
+  const [menuOpen, setMenuOpen] = useState(false);
   useEffect(() => {
     // Braces matter: newer browsers return a Promise from scrollTo, which must not become the effect cleanup.
     window.scrollTo(0, 0);
+    setMenuOpen(false);
   }, [pathname]);
+  useEffect(() => {
+    if (!menuOpen) return;
+    const close = (e: KeyboardEvent) => { if (e.key === 'Escape') setMenuOpen(false); };
+    window.addEventListener('keydown', close);
+    return () => window.removeEventListener('keydown', close);
+  }, [menuOpen]);
   return (
     <div className="flex min-h-dvh flex-col">
-      <header className="sticky top-0 z-30 border-b border-zinc-200/80 bg-white/70 backdrop-blur-xl dark:border-zinc-800/80 dark:bg-zinc-950/70">
-        <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-2.5">
+      <header className="sticky top-0 z-30 border-b border-zinc-200/80 bg-white/70 backdrop-blur-xl print:hidden dark:border-zinc-800/80 dark:bg-zinc-950/70">
+        <div className="mx-auto flex h-14 max-w-7xl items-center gap-3 px-4">
           <NavLink to="/" className="flex shrink-0 items-center gap-2.5" aria-label={t('nav.homeAria')}>
             <Logo />
-            <span className="hidden font-mono text-sm font-semibold tracking-tight lg:inline">
+            <span className="font-mono text-sm font-semibold tracking-tight lg:max-xl:hidden">
               pg<span className="text-sky-500">/</span>bootcamp
             </span>
           </NavLink>
-          <nav className="-mx-1 flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto px-1 text-sm [scrollbar-width:none] lg:ml-4">
+          <nav className="hidden min-w-0 flex-1 items-center gap-0.5 text-sm lg:ml-4 lg:flex">
             {NAV.map((n) => (
               <NavLink
                 key={n.to}
@@ -108,18 +116,19 @@ export default function Layout() {
                 {({ isActive }) => (
                   <>
                     {t(n.label)}
-                    {isActive && <span aria-hidden className="absolute inset-x-3 -bottom-[11px] h-0.5 rounded-full bg-linear-to-r from-sky-500 to-violet-500" />}
+                    {isActive && <span aria-hidden className="absolute inset-x-3 -bottom-[12px] h-0.5 rounded-full bg-linear-to-r from-sky-500 to-violet-500" />}
                   </>
                 )}
               </NavLink>
             ))}
           </nav>
+          <span className="flex-1 lg:hidden" />
           <EngineIndicator />
           <LanguageSwitch />
           <button
             type="button"
             onClick={toggleTheme}
-            className="grid size-8 shrink-0 place-items-center rounded-lg text-zinc-500 transition hover:bg-zinc-900/5 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-white/5 dark:hover:text-white"
+            className="grid size-9 shrink-0 place-items-center rounded-lg text-zinc-500 transition hover:bg-zinc-900/5 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-white/5 dark:hover:text-white"
             aria-label={dark ? t('theme.toLight') : t('theme.toDark')}
             title={dark ? t('theme.light') : t('theme.dark')}
           >
@@ -129,12 +138,44 @@ export default function Layout() {
               <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></svg>
             )}
           </button>
+          <button
+            type="button"
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="grid size-9 shrink-0 place-items-center rounded-lg text-zinc-600 transition hover:bg-zinc-900/5 hover:text-zinc-900 lg:hidden dark:text-zinc-300 dark:hover:bg-white/5 dark:hover:text-white"
+            aria-label={menuOpen ? t('nav.closeMenu') : t('nav.menu')}
+            aria-expanded={menuOpen}
+            aria-controls="mobile-menu"
+          >
+            <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              {menuOpen ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
+            </svg>
+          </button>
         </div>
+        {menuOpen && (
+          <nav id="mobile-menu" className="animate-fade-up border-t border-zinc-200/80 px-4 pt-2 pb-4 lg:hidden dark:border-zinc-800/80" aria-label={t('nav.menu')}>
+            <ul className="mx-auto grid max-w-7xl gap-1 sm:grid-cols-2">
+              {NAV.map((n) => (
+                <li key={n.to}>
+                  <NavLink
+                    to={n.to}
+                    end={n.end}
+                    className={({ isActive }) =>
+                      `flex items-center justify-between rounded-lg px-3 py-2.5 text-[15px] transition ${isActive ? 'bg-sky-500/10 font-medium text-sky-700 dark:text-sky-300' : 'text-zinc-700 hover:bg-zinc-900/5 dark:text-zinc-300 dark:hover:bg-white/5'}`
+                    }
+                  >
+                    {t(n.label)}
+                    <span aria-hidden className="text-zinc-400">→</span>
+                  </NavLink>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )}
       </header>
-      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8">
+      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:py-10">
         <Outlet />
       </main>
-      <footer className="border-t border-zinc-200/80 py-6 text-center font-mono text-[11px] text-zinc-500 dark:border-zinc-800/80">
+      <footer className="border-t border-zinc-200/80 px-4 py-6 text-center font-mono text-[11px] text-zinc-500 print:hidden dark:border-zinc-800/80">
         {t('footer.text')}
       </footer>
     </div>

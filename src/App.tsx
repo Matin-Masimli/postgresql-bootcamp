@@ -1,5 +1,6 @@
-import { Route, Routes } from 'react-router';
+import { Link, Route, Routes } from 'react-router';
 import Layout from './components/Layout.tsx';
+import { EmptyState } from './components/PageHeader.tsx';
 import DiagnosticsPage from './pages/DiagnosticsPage.tsx';
 import ExamPage from './pages/ExamPage.tsx';
 import HandbookPage from './pages/HandbookPage.tsx';
@@ -14,7 +15,16 @@ import { useT } from './i18n/index.ts';
 
 function NotFound() {
   const t = useT();
-  return <p className="text-zinc-500">{t('app.notFound')}</p>;
+  return (
+    <div className="mx-auto max-w-xl py-10">
+      <EmptyState
+        icon="?"
+        title={t('app.notFound')}
+        text={t('app.notFoundText')}
+        action={<Link to="/" className="btn-primary px-4 py-2">← {t('app.backHome')}</Link>}
+      />
+    </div>
+  );
 }
 
 export default function App() {

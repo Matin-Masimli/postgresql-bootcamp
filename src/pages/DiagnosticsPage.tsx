@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import PageHeader from '../components/PageHeader.tsx';
 import { Engine } from '../db/client.ts';
 import { loadManifest } from '../lib/manifest.ts';
 import { useT } from '../i18n/index.ts';
@@ -58,27 +59,22 @@ export default function DiagnosticsPage() {
   }, []);
 
   return (
-    <div className="space-y-5">
-      <section>
-        <h1 className="text-3xl font-semibold tracking-tight">{t('diag.title')}</h1>
-        <p className="mt-1 max-w-2xl text-zinc-600 dark:text-zinc-400">{t('diag.intro')}</p>
-        <button
-          type="button"
-          onClick={run}
-          disabled={running}
-          className="btn-primary mt-3"
-        >
-          {running ? t('diag.measuring') : t('diag.measureAgain')}
-        </button>
-      </section>
+    <div className="space-y-6">
+      <PageHeader
+        eyebrow={t('diag.eyebrow')}
+        title={t('diag.title')}
+        intro={t('diag.intro')}
+        actions={<button type="button" onClick={run} disabled={running} className="btn-primary px-4 py-2">{running ? t('diag.measuring') : t('diag.measureAgain')}</button>}
+      />
       {workerStartMs != null && (
         <p className="text-sm text-zinc-600 dark:text-zinc-400">
           <Rich text={t('diag.readyIn', { time: fmt(workerStartMs) })} />
         </p>
       )}
+      {running && results.length === 0 && <p className="flex items-center gap-2 text-sm text-zinc-500"><span className="size-2 animate-pulse rounded-full bg-sky-500" />{t('diag.measuring')}</p>}
       <div className="grid gap-4 md:grid-cols-2">
         {results.map((r) => (
-          <section key={r.db} className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+          <section key={r.db} className="panel p-5">
             <h2 className="font-semibold">{r.db === 'main' ? t('diag.main') : t('diag.hidden')}</h2>
             {r.error ? (
               <p className="mt-2 text-sm text-red-700 dark:text-red-400">{r.error}</p>
