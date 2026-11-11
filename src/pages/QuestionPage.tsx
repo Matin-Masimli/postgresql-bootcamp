@@ -16,7 +16,7 @@ export default function QuestionPage() {
 
   const pct = ((i + 1) / questions.length) * 100;
   const nav = (
-    <nav className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 border-t border-zinc-200 pt-5 text-sm dark:border-zinc-800">
+    <nav className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 border-t border-black/[0.08] pt-5 text-sm dark:border-white/[0.08]">
       <div className="min-w-0">
         {prev && (
           <Link to={`/topic/${slug}/q/${prev.id}`} className="group inline-flex max-w-full items-center gap-2 text-zinc-600 hover:text-sky-600 dark:text-zinc-400 dark:hover:text-sky-300">
@@ -26,7 +26,7 @@ export default function QuestionPage() {
       </div>
       <div className="flex flex-col items-center gap-1.5">
         <span className="font-mono text-xs text-zinc-500 tabular-nums">{i + 1} / {questions.length}</span>
-        <span className="h-1 w-20 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800"><span className="block h-full rounded-full bg-linear-to-r from-sky-500 to-violet-500" style={{ width: `${pct}%` }} /></span>
+        <span className="h-1 w-20 overflow-hidden rounded-full bg-black/[0.07] dark:bg-white/[0.1]"><span className="block h-full rounded-full bg-sky-600 dark:bg-sky-500" style={{ width: `${pct}%` }} /></span>
       </div>
       <div className="min-w-0 text-right">
         {next

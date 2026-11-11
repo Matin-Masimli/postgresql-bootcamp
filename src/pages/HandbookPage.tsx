@@ -45,7 +45,7 @@ export default function HandbookPage() {
         </ol>
       </nav>
       {content.questions.map((q, i) => (
-        <section key={q.id} id={q.id} className="scroll-mt-20 space-y-3 border-t border-zinc-200 pt-8 break-inside-avoid-page dark:border-zinc-800">
+        <section key={q.id} id={q.id} className="scroll-mt-20 space-y-3 border-t border-black/[0.08] pt-8 break-inside-avoid-page dark:border-white/[0.08]">
           <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
             <span className="chip">{q.id}</span><DifficultyBadge d={q.difficulty} /><span>{t(`type.${q.type}`)}</span>
           </div>

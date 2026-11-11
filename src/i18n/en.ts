@@ -173,8 +173,8 @@ export const en = {
   'runner.recorded': 'Answer recorded. You can change it until the exam ends.',
   'runner.tryAgain': 'Try again',
   'runner.runQuery': '▶ Run the query',
-  'runner.correct': '✓ Correct!',
-  'runner.wrong': '✗ Not quite. The answer is {letter}.',
+  'runner.correct': 'Correct!',
+  'runner.wrong': 'Not quite. The answer is {letter}.',
   'runner.experiment': 'Want to experiment? Try queries in the <a>Playground</a>.',
 
   // ── results and feedback
@@ -189,7 +189,7 @@ export const en = {
   'results.showing': (r, f) => `Showing the first ${f.shown} of ${r.capped ? 'more than ' : ''}${f.total} rows.`,
   'results.done': 'Done. No result set to show. (Changes are rolled back after every run.)',
   'results.emptyString': '(empty string)',
-  'feedback.notQuite': '✗ Not quite.',
+  'feedback.notQuite': 'Not quite.',
   'feedback.expected': 'expected',
   'feedback.yours': 'yours',
   'feedback.noRow': '(no row)',

@@ -49,14 +49,14 @@ export default function ProgressPage() {
         <dl className="grid max-w-3xl grid-cols-3 gap-2 pt-2 sm:gap-3">
           {stats.map(([k, v, suffix]) => (
             <div key={k} className="panel p-3 sm:p-4">
-              <dt className="font-mono text-[10px] tracking-[0.14em] text-zinc-500 uppercase">{k}</dt>
+              <dt className="text-[13px] font-medium text-zinc-500">{k}</dt>
               <dd className="mt-1 font-mono text-xl font-semibold tabular-nums sm:text-2xl">{v}{suffix && <span className="ml-1 text-sm font-normal text-zinc-500 sm:text-base">{suffix}</span>}</dd>
             </div>
           ))}
         </dl>
         <div className="flex max-w-3xl items-center gap-3 pt-1">
-          <div className="h-2 flex-1 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
-            <div className="h-full rounded-full bg-linear-to-r from-sky-500 to-violet-500 transition-[width] duration-700" style={{ width: `${pct}%` }} />
+          <div className="h-2 flex-1 overflow-hidden rounded-full bg-black/[0.07] dark:bg-white/[0.1]">
+            <div className="h-full rounded-full bg-sky-600 dark:bg-sky-500 transition-[width] duration-700" style={{ width: `${pct}%` }} />
           </div>
           <span className="font-mono text-sm font-semibold tabular-nums">{pct}%</span>
         </div>
@@ -65,7 +65,7 @@ export default function ProgressPage() {
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <section className="space-y-3">
           <h2 className="font-semibold">{t('progress.byTopic')}</h2>
-          <ul className="panel divide-y divide-zinc-100 overflow-hidden dark:divide-zinc-800/70">
+          <ul className="panel divide-y divide-black/[0.06] overflow-hidden dark:divide-white/[0.07]">
             {TOPICS.map((topic) => {
               const qs = TOPIC_CONTENT.find((c) => c.id === topic.id)?.questions ?? [];
               const s = qs.filter((q) => p.questions[q.id]?.solved).length;
@@ -77,7 +77,7 @@ export default function ProgressPage() {
                     <span className={`font-mono text-xs ${done ? 'text-emerald-600 dark:text-emerald-400' : 'text-sky-600 dark:text-sky-400'}`}>{done ? '✓' : String(topic.id).padStart(2, '0')}</span>
                     <span className="truncate text-sm font-medium group-hover:text-sky-700 dark:group-hover:text-sky-300">{topic.title}</span>
                     <span className="col-start-2 h-1.5 overflow-hidden rounded-full bg-zinc-200 sm:col-start-auto dark:bg-zinc-800">
-                      <span className="block h-full rounded-full bg-linear-to-r from-sky-500 to-violet-500" style={{ width: `${qs.length ? (s / qs.length) * 100 : 0}%` }} />
+                      <span className="block h-full rounded-full bg-sky-600 dark:bg-sky-500" style={{ width: `${qs.length ? (s / qs.length) * 100 : 0}%` }} />
                     </span>
                     <span className="col-start-3 row-start-1 text-right font-mono text-xs whitespace-nowrap text-zinc-500 tabular-nums sm:col-start-auto sm:row-start-auto">{qs.length ? <><span className="sm:hidden">{s}/{qs.length}</span><span className="hidden sm:inline">{t('progress.topicRow', { solved: s, total: qs.length, tried: a })}</span></> : '—'}</span>
                   </Link>
@@ -92,7 +92,7 @@ export default function ProgressPage() {
             <h2 className="font-semibold">{t('progress.move')}</h2>
             <p className="text-sm text-zinc-600 dark:text-zinc-400">{t('progress.moveText')}</p>
             <button type="button" onClick={exportFile} className="btn-primary w-full py-2">{t('progress.export')}</button>
-            <div className="space-y-2 border-t border-zinc-200 pt-3 dark:border-zinc-800">
+            <div className="space-y-2 border-t border-black/[0.08] pt-3 dark:border-white/[0.08]">
               <label htmlFor="import-mode" className="block text-xs font-medium text-zinc-500">{t('progress.importMode')}</label>
               <select id="import-mode" value={mode} onChange={(e) => setMode(e.target.value as 'merge' | 'replace')} className="field w-full py-2">
                 <option value="merge">{t('progress.importMerge')}</option>

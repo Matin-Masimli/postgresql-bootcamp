@@ -16,7 +16,7 @@ export default function SchemaQuickRef({ onInsert }: { onInsert?: (text: string)
       <p className="mb-2 text-xs text-zinc-500">
         <Rich text={t('schema.refDate', { date: manifest.referenceDate })} /> {onInsert ? t('schema.tapToInsert') : ''}
       </p>
-      <ul className="divide-y divide-zinc-100 rounded-md border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
+      <ul className="divide-y divide-black/[0.06] rounded-md border border-black/[0.08] dark:divide-white/[0.07] dark:border-white/[0.08]">
         {manifest.tables.map((tb) => {
           const pk = new Set(tb.constraints.filter((c) => c.type === 'p').flatMap((c) => c.columns));
           const fk = new Map(tb.constraints.filter((c) => c.type === 'f').map((c) => [c.columns[0], c.refTable]));

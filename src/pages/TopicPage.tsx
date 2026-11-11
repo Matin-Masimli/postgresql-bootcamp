@@ -8,7 +8,7 @@ import { useT } from '../i18n/index.ts';
 import { statusOf, useProgress, type QuestionStatus } from '../progress/store.ts';
 
 const LEVELS: Difficulty[] = ['easy', 'medium', 'hard', 'interview'];
-const LEVEL_BAR: Record<Difficulty, string> = { easy: 'bg-emerald-500', medium: 'bg-sky-500', hard: 'bg-amber-500', interview: 'bg-fuchsia-500' };
+const LEVEL_BAR: Record<Difficulty, string> = { easy: 'bg-emerald-500', medium: 'bg-sky-600 dark:bg-sky-500', hard: 'bg-amber-500', interview: 'bg-violet-500' };
 
 export default function TopicPage() {
   const t = useT();
@@ -39,31 +39,29 @@ export default function TopicPage() {
   const pct = all.length ? Math.round((solved / all.length) * 100) : 0;
 
   return (
-    <div className="space-y-10">
-      <header className="animate-fade-up relative overflow-hidden rounded-2xl border border-zinc-200 bg-white/70 p-6 sm:p-8 dark:border-zinc-800 dark:bg-zinc-900/50">
-        <span aria-hidden className="pointer-events-none absolute -top-10 right-2 font-mono text-[10rem] leading-none font-bold text-zinc-900/[0.04] dark:text-white/[0.04]">
-          {String(meta.id).padStart(2, '0')}
-        </span>
-        <div aria-hidden className="absolute -top-24 -left-24 size-72 rounded-full bg-sky-500/15 blur-3xl" />
-        <nav className="relative font-mono text-xs text-zinc-500">
-          <Link to="/" className="hover:text-sky-500">{t('topic.crumbLearn')}</Link> / {t('topic.crumbTopic', { n: String(meta.id).padStart(2, '0') })}
+    <div className="space-y-14">
+      <header className="animate-fade-up space-y-4 border-b border-black/[0.08] pb-10 dark:border-white/[0.08]">
+        <nav aria-label={t('nav.breadcrumb')} className="flex items-center gap-1.5 text-[14px] text-zinc-500">
+          <Link to="/" className="hover:text-zinc-900 dark:hover:text-white">{t('topic.crumbLearn')}</Link>
+          <span aria-hidden className="text-zinc-300 dark:text-zinc-700">›</span>
+          <span>{t('topic.crumbTopic', { n: String(meta.id).padStart(2, '0') })}</span>
         </nav>
-        <h1 className="relative mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">{meta.title}</h1>
-        <p className="relative mt-2 max-w-2xl text-zinc-600 dark:text-zinc-400">{meta.summary}</p>
+        <h1 className="text-4xl font-bold tracking-[-0.03em] text-balance sm:text-6xl">{meta.title}</h1>
+        <p className="max-w-3xl text-lg leading-relaxed text-zinc-600 sm:text-[21px] dark:text-zinc-400">{meta.summary}</p>
         {t.locale !== 'en' && !c.isTranslated(meta.id) && (
-          <p className="relative mt-3 inline-block rounded-lg border border-amber-400/40 bg-amber-500/10 px-3 py-1.5 text-sm text-amber-800 dark:text-amber-200">{t('topic.notTranslated')}</p>
+          <p className="inline-block rounded-xl bg-amber-500/12 px-3 py-1.5 text-sm text-amber-800 dark:text-amber-200">{t('topic.notTranslated')}</p>
         )}
         {all.length > 0 && (
-          <div className="relative mt-6 flex flex-wrap items-center gap-3">
-            <Link to={`/topic/${meta.slug}/q/${firstOpen.id}`} className="btn-primary px-4 py-2">
-              {solved === 0 ? t('topic.startQuestions') : solved === all.length ? t('topic.reviewQuestions') : t('topic.continueQuestions')} <span aria-hidden>→</span>
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-3 pt-3">
+            <Link to={`/topic/${meta.slug}/q/${firstOpen.id}`} className="btn-primary px-5 py-2.5 text-[16px]">
+              {solved === 0 ? t('topic.startQuestions') : solved === all.length ? t('topic.reviewQuestions') : t('topic.continueQuestions')}
             </Link>
-            <Link to={`/topic/${meta.slug}/handbook`} className="btn-secondary px-4 py-2">{t('topic.handbook')}</Link>
-            <div className="ml-1 flex items-center gap-2">
-              <div className="h-1.5 w-32 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
-                <div className="h-full rounded-full bg-linear-to-r from-sky-500 to-violet-500" style={{ width: `${pct}%` }} />
+            <Link to={`/topic/${meta.slug}/handbook`} className="link text-[16px]">{t('topic.handbook')} <span aria-hidden>›</span></Link>
+            <div className="flex items-center gap-2.5 sm:ml-auto">
+              <div className="h-1 w-36 overflow-hidden rounded-full bg-black/[0.07] dark:bg-white/[0.1]">
+                <div className="h-full rounded-full bg-sky-600 dark:bg-sky-500" style={{ width: `${pct}%` }} />
               </div>
-              <span className="font-mono text-xs text-zinc-500">{t('common.solvedOf', { solved, total: all.length })}</span>
+              <span className="text-[13px] text-zinc-500 tabular-nums">{t('common.solvedOf', { solved, total: all.length })}</span>
             </div>
           </div>
         )}
@@ -81,7 +79,7 @@ export default function TopicPage() {
               <div className="flex flex-wrap items-center gap-2">
                 <div className="mr-auto">
                   <p className="eyebrow">{t('topic.practice')}</p>
-                  <h2 className="text-2xl font-semibold tracking-tight">{t('topic.questions')}</h2>
+                  <h2 className="text-3xl font-bold tracking-[-0.03em]">{t('topic.questions')}</h2>
                 </div>
                 <select aria-label={t('topic.filter.difficulty')} className="field" value={difficulty} onChange={(e) => setDifficulty(e.target.value as Difficulty | 'all')}>
                   <option value="all">{t('topic.filter.allLevels')}</option>
@@ -95,16 +93,16 @@ export default function TopicPage() {
                   {QUESTION_TYPES.map((k) => <option key={k} value={k}>{t(`type.${k}`)}</option>)}
                 </select>
               </div>
-              <ul className="panel divide-y divide-zinc-100 overflow-hidden dark:divide-zinc-800/70">
+              <ul className="panel divide-y divide-black/[0.06] overflow-hidden dark:divide-white/[0.07]">
                 {questions.map((q) => (
                   <li key={q.id}>
-                    <Link to={`/topic/${meta.slug}/q/${q.id}`} className="group flex items-center gap-3 px-4 py-3 transition hover:bg-sky-50/60 dark:hover:bg-sky-500/5">
+                    <Link to={`/topic/${meta.slug}/q/${q.id}`} className="group flex items-center gap-3 px-5 py-3.5 transition-colors hover:bg-black/[0.025] active:bg-black/[0.05] dark:hover:bg-white/[0.04]">
                       <StatusIcon s={statusOf(prog.questions[q.id])} />
-                      <span className="hidden w-14 shrink-0 font-mono text-[11px] text-zinc-400 sm:inline">{q.id.split('-')[1]}</span>
-                      <span className="min-w-0 flex-1 font-medium">{q.title}</span>
-                      <span className="hidden text-xs text-zinc-500 md:inline">{t(`type.${q.type}`)}</span>
+                      <span className="hidden w-10 shrink-0 text-[13px] text-zinc-400 tabular-nums sm:inline">{q.id.split('-')[1]}</span>
+                      <span className="min-w-0 flex-1 text-[16px] font-medium">{q.title}</span>
+                      <span className="hidden text-[13px] text-zinc-500 md:inline">{t(`type.${q.type}`)}</span>
                       <DifficultyBadge d={q.difficulty} />
-                      <span aria-hidden className="text-zinc-300 transition group-hover:translate-x-0.5 group-hover:text-sky-500 dark:text-zinc-700">→</span>
+                      <span aria-hidden className="text-lg leading-none text-zinc-300 transition group-hover:translate-x-0.5 group-hover:text-zinc-500 dark:text-zinc-600">›</span>
                     </Link>
                   </li>
                 ))}
@@ -114,7 +112,7 @@ export default function TopicPage() {
           </div>
 
           <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
-            <div className="panel space-y-3 p-4">
+            <div className="panel space-y-3.5 p-5">
               <p className="eyebrow">{t('topic.mix')}</p>
               {LEVELS.map((d) => {
                 const qs = all.filter((q) => q.difficulty === d);
@@ -126,7 +124,7 @@ export default function TopicPage() {
                       <span className={`capitalize ${difficulty === d ? 'font-semibold text-sky-600 dark:text-sky-300' : 'text-zinc-600 dark:text-zinc-400'}`}>{t(`difficulty.${d}`)}</span>
                       <span className="font-mono text-zinc-500">{done}/{qs.length}</span>
                     </div>
-                    <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
+                    <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-black/[0.07] dark:bg-white/[0.1]">
                       <div className={`h-full rounded-full ${LEVEL_BAR[d]}`} style={{ width: `${(done / qs.length) * 100}%` }} />
                     </div>
                   </button>
@@ -134,13 +132,13 @@ export default function TopicPage() {
               })}
             </div>
             {content.sources.length > 0 && (
-              <div className="panel p-4">
+              <div className="panel p-5">
                 <p className="eyebrow mb-2">{t('topic.reading')}</p>
                 <ul className="space-y-2 text-sm">
                   {content.sources.map((s) => (
                     <li key={s.url}>
-                      <a href={s.url} target="_blank" rel="noreferrer" className="group flex gap-1.5 text-zinc-700 hover:text-sky-600 dark:text-zinc-300 dark:hover:text-sky-300">
-                        <span aria-hidden className="text-sky-500">↗</span><span className="group-hover:underline">{s.title}</span>
+                      <a href={s.url} target="_blank" rel="noreferrer" className="group flex gap-1.5 text-[14px] leading-snug text-zinc-700 hover:text-sky-700 dark:text-zinc-300 dark:hover:text-sky-400">
+                        <span aria-hidden className="text-zinc-400">↗</span><span className="group-hover:underline">{s.title}</span>
                       </a>
                     </li>
                   ))}
@@ -148,8 +146,8 @@ export default function TopicPage() {
               </div>
             )}
             <div className="grid grid-cols-2 gap-2 text-xs">
-              {prev ? <Link to={`/topic/${prev.slug}`} className="panel px-3 py-2 hover:border-sky-400/60"><span className="block text-zinc-500">{t('topic.previous')}</span><span className="font-medium">{prev.title}</span></Link> : <span />}
-              {next && <Link to={`/topic/${next.slug}`} className="panel px-3 py-2 text-right hover:border-sky-400/60"><span className="block text-zinc-500">{t('topic.next')}</span><span className="font-medium">{next.title}</span></Link>}
+              {prev ? <Link to={`/topic/${prev.slug}`} className="panel panel-hover px-4 py-3"><span className="block text-zinc-500">{t('topic.previous')}</span><span className="font-medium">{prev.title}</span></Link> : <span />}
+              {next && <Link to={`/topic/${next.slug}`} className="panel panel-hover px-4 py-3 text-right"><span className="block text-zinc-500">{t('topic.next')}</span><span className="font-medium">{next.title}</span></Link>}
             </div>
           </aside>
         </div>

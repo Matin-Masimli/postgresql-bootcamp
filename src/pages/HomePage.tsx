@@ -59,34 +59,34 @@ function Terminal() {
   const t = useT();
   const { text, demo, done } = useTypewriter();
   return (
-    <div className="relative">
-      {/* The glow stays inside the viewport on narrow screens (it would otherwise widen the page). */}
-      <div aria-hidden className="absolute -inset-y-6 inset-x-0 rounded-[2rem] bg-linear-to-br from-sky-500/25 via-violet-500/20 to-cyan-400/10 blur-2xl lg:-inset-x-6" />
-      <div className="relative overflow-hidden rounded-2xl border border-zinc-200 bg-white/90 shadow-2xl shadow-sky-900/10 dark:border-zinc-700/70 dark:bg-zinc-900/80 dark:shadow-black/50">
-        <div className="flex items-center gap-1.5 border-b border-zinc-200 px-4 py-2.5 dark:border-zinc-800">
-          <span className="size-2.5 rounded-full bg-red-400/80" />
-          <span className="size-2.5 rounded-full bg-amber-400/80" />
-          <span className="size-2.5 rounded-full bg-emerald-400/80" />
-          <span className="ml-3 font-mono text-[11px] text-zinc-500">practice_db — psql</span>
+    <div className="relative mx-auto w-full max-w-3xl">
+      {/* A soft, colourless shadow under the window, the way product shots sit on the page. */}
+      <div aria-hidden className="absolute inset-x-10 -bottom-6 h-16 rounded-full bg-black/20 blur-3xl dark:bg-black/60" />
+      <div className="relative overflow-hidden rounded-2xl bg-white shadow-[0_0_0_1px_rgb(0_0_0/0.06),0_24px_64px_-16px_rgb(0_0_0/0.2)] dark:bg-[#1e1e20] dark:shadow-[0_0_0_1px_rgb(255_255_255/0.08),0_24px_64px_-16px_rgb(0_0_0/0.8)]">
+        <div className="relative flex items-center gap-2 border-b border-black/[0.06] bg-zinc-50/80 px-4 py-3 dark:border-white/[0.06] dark:bg-white/[0.03]">
+          <span className="size-3 rounded-full bg-[#ff5f57]" />
+          <span className="size-3 rounded-full bg-[#febc2e]" />
+          <span className="size-3 rounded-full bg-[#28c840]" />
+          <span className="absolute inset-x-0 text-center text-[13px] font-medium text-zinc-500">practice_db — psql</span>
         </div>
-        <div className="space-y-3 p-4" aria-label={t('home.terminal.aria')} role="img">
-          <div className="relative min-h-[9.5rem]">
-            <SqlCode code={text || ' '} className="!border-0 !bg-transparent !p-0" />
+        <div className="space-y-4 p-5 text-left sm:p-7" aria-label={t('home.terminal.aria')} role="img">
+          <div className="min-h-[8.5rem]">
+            <SqlCode code={text || ' '} className="!rounded-none !bg-transparent !p-0 !shadow-none !ring-0 text-[13.5px] sm:text-[14px]" />
           </div>
           <div className={`transition-opacity duration-500 ${done ? 'opacity-100' : 'opacity-0'}`}>
-            <table className="w-full font-mono text-[12px]">
+            <table className="w-full text-[13px]">
               <thead>
                 <tr className="text-left text-zinc-500">
-                  {demo.columns.map((c) => <th key={c} className="border-b border-zinc-200 py-1 pr-3 font-medium dark:border-zinc-800">{c}</th>)}
+                  {demo.columns.map((c) => <th key={c} className="border-b border-black/[0.08] pr-4 pb-1.5 font-medium dark:border-white/[0.08]">{c}</th>)}
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="font-mono">
                 {demo.rows.map((r, i) => (
-                  <tr key={i}>{r.map((v, j) => <td key={j} className="py-0.5 pr-3 text-zinc-700 dark:text-zinc-300">{v}</td>)}</tr>
+                  <tr key={i}>{r.map((v, j) => <td key={j} className="py-1 pr-4 text-zinc-800 tabular-nums dark:text-zinc-200">{v}</td>)}</tr>
                 ))}
               </tbody>
             </table>
-            <p className="mt-2 font-mono text-[11px] text-emerald-600 dark:text-emerald-400">{t('home.terminal.rows', { n: demo.rows.length })}</p>
+            <p className="mt-3 text-[12px] font-medium text-emerald-600 dark:text-emerald-500">{t('home.terminal.rows', { n: demo.rows.length })}</p>
           </div>
         </div>
       </div>
@@ -101,22 +101,23 @@ function topicStats(t: TopicMeta, p: ProgressData, content: Content) {
   return { total: qs.length, solved, attempted };
 }
 
-function Ring({ pct, size = 64 }: { pct: number; size?: number }) {
-  const r = (size - 8) / 2;
+function Ring({ pct, size = 56 }: { pct: number; size?: number }) {
+  const r = (size - 6) / 2;
   const c = 2 * Math.PI * r;
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90" aria-hidden>
-      <defs>
-        <linearGradient id="ring" x1="0" x2="1" y1="0" y2="1">
-          <stop offset="0%" stopColor="#3b7dff" />
-          <stop offset="100%" stopColor="#8b5cf6" />
-        </linearGradient>
-      </defs>
-      <circle cx={size / 2} cy={size / 2} r={r} fill="none" strokeWidth="6" className="stroke-zinc-200 dark:stroke-zinc-800" />
-      <circle cx={size / 2} cy={size / 2} r={r} fill="none" strokeWidth="6" stroke="url(#ring)" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - pct / 100)} className="transition-[stroke-dashoffset] duration-700" />
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" strokeWidth="5" className="stroke-black/[0.08] dark:stroke-white/[0.1]" />
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" strokeWidth="5" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - pct / 100)} className="stroke-sky-600 transition-[stroke-dashoffset] duration-700 dark:stroke-sky-500" />
     </svg>
   );
 }
+
+/** Line icons drawn in the SF Symbols manner (even strokes, rounded caps). */
+const ICONS = {
+  database: <path d="M4 6.5C4 4.6 7.6 3 12 3s8 1.6 8 3.5v11c0 1.9-3.6 3.5-8 3.5s-8-1.6-8-3.5v-11ZM4 6.5C4 8.4 7.6 10 12 10s8-1.6 8-3.5M4 12c0 1.9 3.6 3.5 8 3.5s8-1.6 8-3.5" />,
+  shield: <path d="M12 3 5 6v5.5c0 4.4 2.9 8.2 7 9.5 4.1-1.3 7-5.1 7-9.5V6l-7-3Zm-3.2 9.2 2.3 2.3 4.2-4.6" />,
+  tree: <path d="M12 5.5V9m0 0H7a2 2 0 0 0-2 2v2m7-4h5a2 2 0 0 1 2 2v2M10.5 2.5h3v3h-3zM3.5 13h3v3h-3zm14 0h3v3h-3zM5 16v2.5m14-2.5v2.5M3.5 18.5h3v3h-3zm14 0h3v3h-3z" />,
+} as const;
 
 export default function HomePage() {
   const t = useT();
@@ -133,78 +134,88 @@ export default function HomePage() {
     ?? TOPICS.find((x) => { const s = stats.get(x.id)!; return s.solved < s.total; });
   const started = solved > 0 || p.activeDays.length > 0;
 
+  const features = [
+    { icon: ICONS.database, tint: 'text-sky-600 bg-sky-600/10 dark:text-sky-400 dark:bg-sky-400/15', title: t('home.feature1.title'), text: t('home.feature1.text') },
+    { icon: ICONS.shield, tint: 'text-emerald-600 bg-emerald-500/12 dark:text-emerald-500 dark:bg-emerald-500/15', title: t('home.feature2.title'), text: t('home.feature2.text') },
+    { icon: ICONS.tree, tint: 'text-violet-600 bg-violet-500/12 dark:text-[#d99cf5] dark:bg-violet-500/20', title: t('home.feature3.title'), text: t('home.feature3.text') },
+  ];
+
   return (
-    <div className="space-y-16">
-      <section className="grid items-center gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
-        <div className="animate-fade-up space-y-6">
-          <p className="eyebrow">{t('home.eyebrow')}</p>
-          <h1 className="text-4xl leading-[1.08] font-semibold tracking-tight sm:text-5xl lg:text-6xl">
-            {t('home.title1')}<br />
-            <span className="text-gradient">{t('home.title2')}</span>
+    <div className="space-y-24 sm:space-y-32">
+      {/* ── Hero ── */}
+      <section className="space-y-14 pt-4 text-center sm:pt-10">
+        <div className="animate-fade-up mx-auto max-w-4xl space-y-6">
+          <p className="eyebrow text-[15px]">{t('home.eyebrow')}</p>
+          <h1 className="text-[2.75rem] leading-[1.04] font-bold tracking-[-0.035em] text-balance sm:text-6xl lg:text-[5rem]">
+            {t('home.title1')}
+            <span className="block text-zinc-400 dark:text-zinc-500">{t('home.title2')}</span>
           </h1>
-          <p className="max-w-xl text-base text-zinc-600 sm:text-lg dark:text-zinc-400">
+          <p className="mx-auto max-w-2xl text-lg leading-relaxed text-zinc-600 sm:text-[21px] dark:text-zinc-400">
             <Rich
               text={t('home.intro', { n: TOPICS.length })}
               tags={{
-                code: (c) => <code className="font-mono text-sky-600 dark:text-sky-300">{c}</code>,
-                hl: (c) => <span className="text-violet-600 dark:text-violet-300">{c}</span>,
+                code: (c) => <code className="font-mono text-[0.9em] text-zinc-900 dark:text-white">{c}</code>,
+                hl: (c) => <span className="font-medium text-zinc-900 dark:text-white">{c}</span>,
               }}
             />
           </p>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 pt-2">
             {current && (
-              <Link to={`/topic/${current.slug}`} className="btn-primary px-5 py-2.5 text-base">
-                {started ? t('home.continue', { title: current.title }) : t('home.start')} <span aria-hidden>→</span>
+              <Link to={`/topic/${current.slug}`} className="btn-primary px-6 py-3 text-[17px]">
+                {started ? t('home.continue', { title: current.title }) : t('home.start')}
               </Link>
             )}
-            <Link to="/playground" className="btn-secondary px-5 py-2.5 text-base">{t('home.openPlayground')}</Link>
+            <Link to="/playground" className="link text-[17px]">{t('home.openPlayground')} <span aria-hidden>›</span></Link>
           </div>
-          <dl className="flex flex-wrap gap-x-8 gap-y-3 pt-2">
-            {[
-              [t('home.stat.topics'), String(TOPICS.length)],
-              [t('home.stat.questions'), String(total)],
-              [t('home.stat.solved'), `${solved}`],
-              [t('home.stat.streak'), streak ? `${t('home.streakDays', { n: streak })} 🔥` : '—'],
-            ].map(([k, v]) => (
-              <div key={k}>
-                <dt className="font-mono text-[10px] tracking-[0.14em] text-zinc-500 uppercase">{k}</dt>
-                <dd className="font-mono text-2xl font-semibold tabular-nums">{v}</dd>
-              </div>
-            ))}
-          </dl>
         </div>
-        <Terminal />
+        <div className="animate-fade-up [animation-delay:120ms]">
+          <Terminal />
+        </div>
+        <dl className="animate-fade-up mx-auto grid max-w-3xl grid-cols-2 gap-y-8 pt-6 [animation-delay:200ms] sm:grid-cols-4">
+          {[
+            [t('home.stat.topics'), String(TOPICS.length)],
+            [t('home.stat.questions'), String(total)],
+            [t('home.stat.solved'), `${solved}`],
+            [t('home.stat.streak'), streak ? t('home.streakDays', { n: streak }) : '—'],
+          ].map(([k, v]) => (
+            <div key={k} className="flex flex-col-reverse items-center gap-1">
+              <dt className="text-[14px] text-zinc-500">{k}</dt>
+              <dd className="font-display text-4xl font-semibold tracking-[-0.03em] tabular-nums">{v}</dd>
+            </div>
+          ))}
+        </dl>
       </section>
 
-      <section className="grid gap-4 sm:grid-cols-3">
-        {([
-          { icon: '⌘', title: t('home.feature1.title'), text: t('home.feature1.text') },
-          { icon: '✓', title: t('home.feature2.title'), text: t('home.feature2.text') },
-          { icon: '◈', title: t('home.feature3.title'), text: t('home.feature3.text') },
-        ]).map((f) => (
-          <div key={f.title} className="panel p-5">
-            <span className="grid size-9 place-items-center rounded-lg bg-linear-to-br from-sky-500/20 to-violet-500/20 font-mono text-lg text-sky-600 ring-1 ring-sky-500/20 dark:text-sky-300">{f.icon}</span>
-            <h2 className="mt-3 font-semibold">{f.title}</h2>
-            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{f.text}</p>
+      {/* ── Features ── */}
+      <section className="grid gap-5 md:grid-cols-3">
+        {features.map((f) => (
+          <div key={f.title} className="panel space-y-4 p-7 sm:p-8">
+            <span className={`grid size-12 place-items-center rounded-2xl ${f.tint}`}>
+              <svg viewBox="0 0 24 24" className="size-6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">{f.icon}</svg>
+            </span>
+            <h2 className="text-2xl font-semibold tracking-[-0.025em]">{f.title}</h2>
+            <p className="text-zinc-600 dark:text-zinc-400">{f.text}</p>
           </div>
         ))}
       </section>
 
-      <section className="space-y-10">
+      {/* ── The path ── */}
+      <section className="space-y-14">
         <div className="flex flex-wrap items-end gap-6">
-          <div className="mr-auto space-y-1">
-            <p className="eyebrow">{t('home.path.eyebrow')}</p>
-            <h2 className="text-3xl font-semibold tracking-tight">{t('home.path.title')}</h2>
+          <div className="mr-auto space-y-2">
+            <p className="eyebrow text-[15px]">{t('home.path.eyebrow')}</p>
+            <h2 className="text-4xl font-bold tracking-[-0.03em] text-balance sm:text-5xl">{t('home.path.title')}</h2>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <div className="relative">
               <Ring pct={pct} />
-              <span className="absolute inset-0 grid place-items-center font-mono text-sm font-semibold">{pct}%</span>
+              <span className="absolute inset-0 grid place-items-center text-[13px] font-semibold tabular-nums">{pct}%</span>
             </div>
-            <div className="text-sm">
-              <div className="font-medium">{t('common.solvedOf', { solved, total })}</div>
-              <div className="flex gap-2 text-zinc-500">
-                <Link to="/review" className="hover:text-sky-500">{t('nav.review')}</Link>·<Link to="/exam" className="hover:text-sky-500">{t('exam.title')}</Link>
+            <div>
+              <div className="font-semibold">{t('common.solvedOf', { solved, total })}</div>
+              <div className="flex gap-4 text-[15px]">
+                <Link to="/review" className="link">{t('nav.review')} ›</Link>
+                <Link to="/exam" className="link">{t('exam.title')} ›</Link>
               </div>
             </div>
           </div>
@@ -216,16 +227,14 @@ export default function HomePage() {
           const sTotal = st.reduce((s, x) => s + x.total, 0);
           const sSolved = st.reduce((s, x) => s + x.solved, 0);
           return (
-            <div key={stage.n} className="grid gap-4 lg:grid-cols-[14rem_minmax(0,1fr)]">
-              <div className="lg:pt-2">
-                <div className="flex items-center gap-3 lg:block">
-                  <span className="font-mono text-xs text-zinc-400 uppercase">{t('home.stage', { n: stage.n })}</span>
-                  <h3 className="text-lg font-semibold lg:mt-1">{t(`home.stage${stage.n}.name`)}</h3>
-                </div>
-                <p className="mt-1 text-sm text-zinc-500">{t(`home.stage${stage.n}.tagline`)}</p>
-                <p className="mt-2 font-mono text-xs text-zinc-500">{t('common.solvedOf', { solved: sSolved, total: sTotal })}</p>
+            <div key={stage.n} className="grid gap-5 lg:grid-cols-[15rem_minmax(0,1fr)]">
+              <div className="space-y-1.5 lg:pt-3">
+                <p className="text-[13px] font-semibold text-zinc-500">{t('home.stage', { n: stage.n })}</p>
+                <h3 className="text-2xl font-semibold tracking-[-0.025em]">{t(`home.stage${stage.n}.name`)}</h3>
+                <p className="text-[15px] text-zinc-600 dark:text-zinc-400">{t(`home.stage${stage.n}.tagline`)}</p>
+                <p className="pt-1 text-[13px] text-zinc-500 tabular-nums">{t('common.solvedOf', { solved: sSolved, total: sTotal })}</p>
               </div>
-              <ol className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              <ol className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 {topics.map((topic) => {
                   const s = stats.get(topic.id)!;
                   const done = s.total > 0 && s.solved === s.total;
@@ -234,25 +243,20 @@ export default function HomePage() {
                     <li key={topic.id}>
                       <Link
                         to={`/topic/${topic.slug}`}
-                        className={`panel panel-hover group relative block h-full overflow-hidden p-4 ${isCurrent ? 'border-sky-400/70 ring-1 ring-sky-500/30 dark:border-sky-500/50' : ''}`}
+                        className={`panel panel-hover flex h-full flex-col p-5 ${isCurrent ? '!ring-2 !ring-sky-600 dark:!ring-sky-500' : ''}`}
                       >
-                        <span aria-hidden className="pointer-events-none absolute -top-3 -right-1 font-mono text-6xl font-bold text-zinc-900/[0.04] transition group-hover:text-sky-500/10 dark:text-white/[0.04]">
-                          {String(topic.id).padStart(2, '0')}
-                        </span>
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono text-xs text-sky-600 dark:text-sky-400">{String(topic.id).padStart(2, '0')}</span>
-                          {done && <span className="rounded-full bg-emerald-500/15 px-1.5 text-[10px] font-semibold text-emerald-600 uppercase dark:text-emerald-400">{t('home.badge.done')}</span>}
-                          {isCurrent && !done && <span className="rounded-full bg-sky-500/15 px-1.5 text-[10px] font-semibold text-sky-600 uppercase dark:text-sky-300">{started ? t('home.badge.continue') : t('home.badge.startHere')}</span>}
+                        <div className="flex items-center gap-2 text-[13px]">
+                          <span className="font-semibold text-zinc-400 tabular-nums">{String(topic.id).padStart(2, '0')}</span>
+                          {done && <span className="rounded-full bg-emerald-500/15 px-2 py-px text-[12px] font-semibold text-emerald-700 dark:text-emerald-500">{t('home.badge.done')}</span>}
+                          {isCurrent && !done && <span className="rounded-full bg-sky-600/10 px-2 py-px text-[12px] font-semibold text-sky-700 dark:bg-sky-400/15 dark:text-sky-400">{started ? t('home.badge.continue') : t('home.badge.startHere')}</span>}
                         </div>
-                        <h4 className="mt-1 font-semibold">{topic.title}</h4>
-                        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{topic.summary}</p>
-                        <div className="mt-4 flex items-center gap-2">
-                          <div className="flex flex-1 gap-0.5" role="progressbar" aria-valuenow={s.solved} aria-valuemin={0} aria-valuemax={s.total} aria-label={t('home.progressAria', { title: topic.title })}>
-                            {Array.from({ length: s.total }, (_, i) => (
-                              <span key={i} className={`h-1.5 flex-1 rounded-full ${i < s.solved ? 'bg-linear-to-r from-sky-500 to-violet-500' : 'bg-zinc-200 dark:bg-zinc-800'}`} />
-                            ))}
+                        <h4 className="mt-2 text-[19px] font-semibold tracking-[-0.02em]">{topic.title}</h4>
+                        <p className="mt-1 flex-1 text-[14px] leading-snug text-zinc-600 dark:text-zinc-400">{topic.summary}</p>
+                        <div className="mt-5 flex items-center gap-3">
+                          <div className="h-1 flex-1 overflow-hidden rounded-full bg-black/[0.07] dark:bg-white/[0.1]" role="progressbar" aria-valuenow={s.solved} aria-valuemin={0} aria-valuemax={s.total} aria-label={t('home.progressAria', { title: topic.title })}>
+                            <div className={`h-full rounded-full ${done ? 'bg-emerald-500' : 'bg-sky-600 dark:bg-sky-500'}`} style={{ width: `${s.total ? (s.solved / s.total) * 100 : 0}%` }} />
                           </div>
-                          <span className="font-mono text-[11px] text-zinc-500 tabular-nums">{s.solved}/{s.total}</span>
+                          <span className="text-[12px] text-zinc-500 tabular-nums">{s.solved}/{s.total}</span>
                         </div>
                       </Link>
                     </li>

@@ -78,7 +78,7 @@ function LogicalFlow({ steps }: { steps: LogicalStep[] }) {
   const max = Math.max(1, ...steps.filter((s) => s.present).map((s) => s.rows ?? 0));
   let n = 0;
   return (
-    <ol className="panel divide-y divide-zinc-100 overflow-hidden dark:divide-zinc-800/70">
+    <ol className="panel divide-y divide-black/[0.06] overflow-hidden dark:divide-white/[0.07]">
       {steps.map((s) => {
         if (!s.present) {
           return (
@@ -92,7 +92,7 @@ function LogicalFlow({ steps }: { steps: LogicalStep[] }) {
         const pct = s.rows !== undefined ? Math.max(1.5, (Math.log10(s.rows + 1) / Math.log10(max + 1)) * 100) : 0;
         return (
           <li key={s.id} className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 px-3 py-2.5 sm:grid-cols-[auto_minmax(0,14rem)_minmax(0,1fr)] sm:items-center">
-            <span className="grid size-6 place-items-center rounded-full bg-linear-to-br from-sky-500 to-violet-500 font-mono text-[11px] font-semibold text-white shadow-md shadow-sky-500/30">{n}</span>
+            <span className="grid size-6 place-items-center rounded-full bg-sky-600 dark:bg-sky-500 font-mono text-[11px] font-semibold text-white shadow-md shadow-sky-500/30">{n}</span>
             <div className="min-w-0">
               <div className="font-mono text-[13px] font-semibold text-sky-700 dark:text-sky-300">{s.label}</div>
               <div className="text-xs text-zinc-500">{t(`step.${s.id}`)}</div>
@@ -125,9 +125,9 @@ function PlanTree({ node, depth, totalMs, hottest, analyzed }: { node: PlanNode;
   const hot = hottest === node && (node.selfMs ?? 0) > 0;
   const off = analyzed && node.estimatedRows > 0 && node.rows > 0 ? Math.max(node.rows / node.estimatedRows, node.estimatedRows / node.rows) : 1;
   return (
-    <div className={depth > 0 ? 'relative ml-4 border-l border-zinc-200 pl-3 sm:ml-5 sm:pl-4 dark:border-zinc-800' : ''}>
+    <div className={depth > 0 ? 'relative ml-4 border-l border-black/[0.08] pl-3 sm:ml-5 sm:pl-4 dark:border-white/[0.08]' : ''}>
       {depth > 0 && <span aria-hidden className="absolute top-6 -left-px h-px w-3 bg-zinc-200 sm:w-4 dark:bg-zinc-800" />}
-      <div className={`my-1.5 rounded-lg border p-2.5 transition ${hot ? 'border-rose-400/60 bg-rose-500/5 shadow-lg shadow-rose-500/10' : 'border-zinc-200 bg-white/60 dark:border-zinc-800 dark:bg-zinc-950/40'}`}>
+      <div className={`my-1.5 rounded-lg border p-2.5 transition ${hot ? 'border-rose-400/60 bg-rose-500/5 shadow-lg shadow-rose-500/10' : 'border-black/[0.08] bg-white/60 dark:border-white/[0.08] dark:bg-zinc-950/40'}`}>
         <div className="flex items-start gap-2.5">
           <button
             type="button"

@@ -186,8 +186,8 @@ export const az: Dict = {
   'runner.recorded': 'Cavab qeydə alındı. İmtahan bitənə qədər onu dəyişə bilərsiniz.',
   'runner.tryAgain': 'Yenidən cəhd et',
   'runner.runQuery': '▶ Sorğunu icra et',
-  'runner.correct': '✓ Düzdür!',
-  'runner.wrong': '✗ Tam deyil. Düzgün cavab: {letter}.',
+  'runner.correct': 'Düzdür!',
+  'runner.wrong': 'Tam deyil. Düzgün cavab: {letter}.',
   'runner.experiment': 'Sınaqlar etmək istəyirsiniz? Sorğuları <a>Playground</a>-da yoxlayın.',
 
   // ── results and feedback
@@ -202,7 +202,7 @@ export const az: Dict = {
   'results.showing': (r, f) => `${r.capped ? `${from(r.total, f.total)} çox` : f.total} sətirdən ilk ${f.shown} sətir göstərilir.`,
   'results.done': 'Hazırdır. Göstəriləcək nəticə yoxdur. (Dəyişikliklər hər icradan sonra geri qaytarılır.)',
   'results.emptyString': '(boş mətn)',
-  'feedback.notQuite': '✗ Tam deyil.',
+  'feedback.notQuite': 'Tam deyil.',
   'feedback.expected': 'gözlənilən',
   'feedback.yours': 'sizinki',
   'feedback.noRow': '(sətir yoxdur)',

@@ -98,7 +98,7 @@ export default function ExamPage() {
         {prog.exams.length > 0 && (
           <section className="space-y-3">
             <h2 className="font-semibold">{t('exam.previous')}</h2>
-            <ul className="panel divide-y divide-zinc-100 text-sm dark:divide-zinc-800/70">
+            <ul className="panel divide-y divide-black/[0.06] text-sm dark:divide-white/[0.07]">
               {[...prog.exams].reverse().map((x) => {
                 const n = Object.keys(x.results).length;
                 const ok = Object.values(x.results).filter(Boolean).length;
@@ -118,11 +118,11 @@ export default function ExamPage() {
     return (
       <div className="max-w-3xl space-y-6">
         <PageHeader eyebrow={t('exam.title')} title={t('exam.result', { ok, n: exam.ids.length, pct })}>
-          <div className="h-2 max-w-md overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
+          <div className="h-2 max-w-md overflow-hidden rounded-full bg-black/[0.07] dark:bg-white/[0.1]">
             <div className={`h-full rounded-full ${pct >= 70 ? 'bg-emerald-500' : pct >= 40 ? 'bg-amber-500' : 'bg-red-500'}`} style={{ width: `${pct}%` }} />
           </div>
         </PageHeader>
-        <ul className="panel divide-y divide-zinc-100 dark:divide-zinc-800/70">
+        <ul className="panel divide-y divide-black/[0.06] dark:divide-white/[0.07]">
           {exam.ids.map((id, i) => {
             const q = getQuestion(id)!;
             const slug = TOPICS.find((t) => t.id === q.topic)!.slug;
@@ -146,7 +146,7 @@ export default function ExamPage() {
   const q = getQuestion(exam.ids[exam.index])!;
   const answered = Object.keys(exam.answers).length;
   const nav = (
-    <nav className="flex flex-wrap items-center gap-1 border-t border-zinc-200 pt-4 dark:border-zinc-800" aria-label={t('exam.navAria')}>
+    <nav className="flex flex-wrap items-center gap-1 border-t border-black/[0.08] pt-4 dark:border-white/[0.08]" aria-label={t('exam.navAria')}>
       {exam.ids.map((id, i) => (
         <button key={id} type="button" onClick={() => save({ ...exam, index: i })} aria-current={i === exam.index}
           className={`size-8 rounded-lg font-mono text-xs transition ${i === exam.index ? 'bg-sky-600 font-semibold text-white shadow-sm shadow-sky-600/30' : id in exam.answers ? 'bg-sky-500/15 text-sky-700 dark:text-sky-300' : 'border border-zinc-300 text-zinc-500 hover:border-sky-400 dark:border-zinc-700'}`}>
@@ -157,7 +157,7 @@ export default function ExamPage() {
   );
   return (
     <div className="space-y-3">
-      <div className="sticky top-14 z-20 -mx-4 flex items-center gap-3 border-b border-zinc-200 bg-zinc-50/90 px-4 py-2.5 text-sm backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/90">
+      <div className="material sticky top-14 z-20 -mx-4 flex items-center gap-3 px-4 py-2.5 text-sm sm:-mx-6 sm:px-6">
         <span className={`rounded-lg px-2 py-0.5 font-mono text-base font-semibold tabular-nums ${remaining < 300 ? 'bg-red-500/10 text-red-600 dark:text-red-400' : 'bg-zinc-900/5 dark:bg-white/5'}`}>⏱ {fmtClock(remaining)}</span>
         <span className="text-zinc-500">{t('exam.status', { i: exam.index + 1, n: exam.ids.length, answered })}</span>
         <button type="button" onClick={() => { if (window.confirm(t('exam.confirmFinish'))) finish(exam); }} className="btn-secondary ml-auto">{t('exam.finish')}</button>

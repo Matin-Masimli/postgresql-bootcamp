@@ -81,7 +81,7 @@ function TableCard({ table: t, highlight }: { table: TableMeta; highlight: strin
 
   return (
     <article id={`table-${t.name}`} className="panel scroll-mt-20 overflow-hidden">
-      <header className="border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
+      <header className="border-b border-black/[0.08] px-4 py-3 dark:border-white/[0.08]">
         <div className="flex flex-wrap items-baseline gap-x-3">
           <h3 className="font-mono text-base font-semibold">{t.name}</h3>
           <span className="text-sm text-zinc-500">{tr('common.rows', { n: t.rowCount.main ?? 0 })}</span>
@@ -91,7 +91,7 @@ function TableCard({ table: t, highlight }: { table: TableMeta; highlight: strin
       <div className="overflow-x-auto">
         <table className="w-full min-w-[640px] table-fixed text-left text-sm">
           <colgroup><col className="w-[22%]" /><col className="w-[24%]" /><col className="w-[24%]" /><col /></colgroup>
-          <thead className="text-xs uppercase tracking-wide text-zinc-500">
+          <thead className="text-[12px] font-semibold text-zinc-500">
             <tr>
               <th className="px-4 py-2 font-medium">{tr('schema.col.column')}</th>
               <th className="px-4 py-2 font-medium">{tr('schema.col.type')}</th>
@@ -99,7 +99,7 @@ function TableCard({ table: t, highlight }: { table: TableMeta; highlight: strin
               <th className="px-4 py-2 font-medium">{tr('schema.col.notes')}</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+          <tbody className="divide-y divide-black/[0.06] dark:divide-white/[0.07]">
             {t.columns.map((c) => (
               <tr key={c.name} className={highlight && c.name.includes(highlight) ? 'bg-sky-50 dark:bg-sky-950/40' : undefined}>
                 <td className="truncate px-4 py-1.5 font-mono" title={c.name}>{c.name}</td>
@@ -123,7 +123,7 @@ function TableCard({ table: t, highlight }: { table: TableMeta; highlight: strin
         </table>
       </div>
       {(checks.length > 0 || compositePk || uniques.some((u) => u.columns.length > 1)) && (
-        <details className="border-t border-zinc-200 px-4 py-2 text-sm dark:border-zinc-800">
+        <details className="border-t border-black/[0.08] px-4 py-2 text-sm dark:border-white/[0.08]">
           <summary className="cursor-pointer text-zinc-500">{tr('schema.constraints')}</summary>
           <ul className="mt-2 space-y-1 font-mono text-xs text-zinc-600 dark:text-zinc-400">
             {t.constraints.filter((c) => c.type !== 'f').map((c) => (

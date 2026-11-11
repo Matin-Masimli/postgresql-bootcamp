@@ -17,8 +17,8 @@ export function ErrorBox({ error, sql, title }: { error: SqlError; sql?: string;
   const isPg = !!error.code && /^[0-9A-Z]{5}$/.test(error.code);
   title ??= isPg ? t('results.pgError') : error.code === 'TIMEOUT' ? t('results.stopped') : t('results.cannotRun');
   return (
-    <div className="rounded-xl border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-900 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200">
-      <p className="font-medium">
+    <div className="rounded-2xl bg-red-500/[0.08] px-4 py-3 text-[14px] text-red-900 dark:bg-red-500/15 dark:text-red-200">
+      <p className="font-semibold">
         {title}
         {isPg && <span className="ml-2 font-mono text-xs opacity-70">SQLSTATE {error.code}</span>}
       </p>
@@ -36,10 +36,10 @@ export default function RunResults({ output, sql }: { output: RunOutput; sql: st
   return (
     <div className="space-y-3">
       {output.statements.length > 0 && (
-        <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-zinc-500">
+        <ul className="flex flex-wrap gap-x-4 gap-y-1 text-[13px] text-zinc-500">
           {output.statements.map((s, i) => (
             <li key={i}>
-              <span className="font-mono text-zinc-700 dark:text-zinc-300">{s.command}</span>{' '}
+              <span className="font-semibold text-zinc-700 dark:text-zinc-300">{s.command}</span>{' '}
               {s.result
                 ? t('results.returned', { n: s.rowCount, capped: s.rowCountCapped ? 1 : 0 })
                 : t('results.affected', { n: s.rowCount })}{' '}
@@ -52,7 +52,7 @@ export default function RunResults({ output, sql }: { output: RunOutput; sql: st
       {withResult?.result && (
         <>
           {withResult.result.rows.length === 0 ? (
-            <p className="rounded-md border border-dashed border-zinc-300 px-3 py-4 text-center text-sm text-zinc-500 dark:border-zinc-700">
+            <p className="well px-4 py-6 text-center text-[14px] text-zinc-500">
               {t('results.noRows', { cols: withResult.result.columns.map((c) => c.name).join(', ') })}
             </p>
           ) : (

@@ -45,7 +45,7 @@ export default function ReviewPage() {
     const go = (index: number) => save({ ...session, index });
     const topicMeta = content.topics.find((m) => m.id === q.topic);
     const nav = (
-      <nav className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 border-t border-zinc-200 pt-5 text-sm dark:border-zinc-800">
+      <nav className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 border-t border-black/[0.08] pt-5 text-sm dark:border-white/[0.08]">
         <div><button type="button" disabled={session.index === 0} onClick={() => go(session.index - 1)} className="btn-ghost">{t('review.previous')}</button></div>
         <span className="font-mono text-xs text-zinc-500 tabular-nums">{t('review.counter', { i: session.index + 1, n: session.ids.length })}</span>
         <div className="text-right">
@@ -62,7 +62,7 @@ export default function ReviewPage() {
           {topicMeta && <span className="text-zinc-500">{t('runner.topicLabel', { n: String(topicMeta.id).padStart(2, '0'), title: topicMeta.title })}</span>}
           <span className="ml-auto flex items-center gap-3">
             <span className="flex gap-1" aria-hidden>
-              {session.ids.map((id, k) => <span key={id} className={`h-1.5 w-4 rounded-full ${k === session.index ? 'bg-sky-500' : k < session.index ? 'bg-sky-500/40' : 'bg-zinc-200 dark:bg-zinc-800'}`} />)}
+              {session.ids.map((id, k) => <span key={id} className={`h-1.5 w-4 rounded-full ${k === session.index ? 'bg-sky-500' : k < session.index ? 'bg-sky-500/40' : 'bg-black/[0.07] dark:bg-white/[0.1]'}`} />)}
             </span>
             <button type="button" onClick={() => save(null)} className="btn-ghost text-xs">{t('review.end')}</button>
           </span>

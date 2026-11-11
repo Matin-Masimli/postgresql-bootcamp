@@ -32,19 +32,19 @@ interface Props {
 export default function ResultTable({ columns, rows, highlight, maxHeight = '420px', numbered = true, fixed = false }: Props) {
   const cols = columns.map((c) => (typeof c === 'string' ? { name: c, dataTypeID: undefined } : c));
   return (
-    <div className="overflow-auto rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950/50" style={{ maxHeight }}>
+    <div className="overflow-auto rounded-xl border border-black/[0.08] bg-white dark:border-white/[0.08] dark:bg-zinc-950/50" style={{ maxHeight }}>
       <table className={`min-w-full text-left text-[13px] ${fixed ? 'w-full table-fixed' : ''}`}>
         <thead className="sticky top-0 z-10 bg-zinc-100/95 text-zinc-600 backdrop-blur dark:bg-zinc-900/95 dark:text-zinc-300">
           <tr>
             {numbered && <th className="w-10 px-3 py-2 text-right font-normal text-zinc-400 dark:text-zinc-600">#</th>}
             {cols.map((c, i) => (
-              <th key={i} className={`border-b border-zinc-200 px-3 py-2 font-mono text-[12px] font-medium whitespace-nowrap dark:border-zinc-800 ${c.dataTypeID !== undefined && NUMERIC.has(c.dataTypeID) ? 'text-right' : ''}`} title={c.dataTypeID !== undefined ? typeName(c.dataTypeID) : undefined}>
+              <th key={i} className={`border-b border-black/[0.08] px-3 py-2 font-mono text-[12px] font-medium whitespace-nowrap dark:border-white/[0.08] ${c.dataTypeID !== undefined && NUMERIC.has(c.dataTypeID) ? 'text-right' : ''}`} title={c.dataTypeID !== undefined ? typeName(c.dataTypeID) : undefined}>
                 {c.name}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/70">
+        <tbody className="divide-y divide-black/[0.06] dark:divide-white/[0.07]">
           {rows.map((r, i) => (
             <tr key={i} className="transition-colors hover:bg-sky-50/60 dark:hover:bg-sky-500/5">
               {numbered && <td className="px-3 py-1.5 text-right font-mono text-[11px] text-zinc-400 dark:text-zinc-600">{i + 1}</td>}

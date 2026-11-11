@@ -42,9 +42,9 @@ export default function QuestionRunner({ question, mode = 'practice', onExamSubm
   }, []);
 
   return (
-    <article className="space-y-4">
-      <header className="space-y-2">
-        <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
+    <article className="space-y-6">
+      <header className="space-y-3">
+        <div className="flex flex-wrap items-center gap-2 text-[13px] text-zinc-500">
           {mode === 'practice' && <StatusIcon s={statusOf(p)} />}
           <span className="chip">{question.id}</span>
           <DifficultyBadge d={question.difficulty} />
@@ -58,7 +58,7 @@ export default function QuestionRunner({ question, mode = 'practice', onExamSubm
             </span>
           ) : null}
         </div>
-        <h1 className="text-3xl font-semibold tracking-tight text-balance">{question.title}</h1>
+        <h1 className="text-3xl font-bold tracking-[-0.03em] text-balance sm:text-4xl">{question.title}</h1>
       </header>
       {isQueryQuestion(question) ? (
         <QueryRunner key={question.id} q={question} mode={mode} onExamSubmit={onExamSubmit} examAnswered={examAnswered} />
@@ -146,14 +146,14 @@ function QueryRunner({ q, mode, onExamSubmit, examAnswered }: { q: QueryQuestion
 
   const taskPanel = (
     <div className="space-y-4">
-      <div className="panel p-4 sm:p-5"><Markdown>{q.prompt}</Markdown></div>
+      <div className="panel p-5 sm:p-6"><Markdown>{q.prompt}</Markdown></div>
       {mode === 'practice' && (
         <>
           {hints > 0 && (
             <ol className="space-y-2">
               {q.hints.slice(0, hints).map((h, i) => (
-                <li key={i} className="rounded-xl border border-sky-200 bg-sky-50/80 px-3 py-2 text-sm dark:border-sky-500/20 dark:bg-sky-500/5">
-                  <span className="mr-1 font-medium">{t('runner.hint', { n: i + 1 })}</span>
+                <li key={i} className="animate-materialize rounded-2xl bg-sky-600/[0.07] px-4 py-3 text-[15px] dark:bg-sky-400/[0.1]">
+                  <span className="mb-1 block text-[13px] font-semibold text-sky-700 dark:text-sky-400">{t('runner.hint', { n: i + 1 })}</span>
                   <Markdown>{h}</Markdown>
                 </li>
               ))}
@@ -202,7 +202,7 @@ function QueryRunner({ q, mode, onExamSubmit, examAnswered }: { q: QueryQuestion
         <button type="button" className={btnGhost} onClick={() => { if (sql === initial || window.confirm(t('runner.confirmReset'))) { setSql(initial); setOutput(null); setFeedback(null); setViz(null); } }}>
           {t('runner.reset')}
         </button>
-        <span className="ml-auto hidden text-[11px] text-zinc-500 xl:inline"><span className="kbd">Ctrl</span> + <span className="kbd">Enter</span> {t('runner.kbdRuns')}</span>
+        <span className="ml-auto hidden text-[12px] text-zinc-500 xl:inline"><span className="kbd">Ctrl</span> + <span className="kbd">Enter</span> {t('runner.kbdRuns')}</span>
         <button type="button" className={btnGhost} onClick={() => setSchemaOpen(!schemaOpen)} aria-expanded={schemaOpen}>
           {schemaOpen ? t('runner.hideSchema') : t('runner.schema')}
         </button>
@@ -214,33 +214,33 @@ function QueryRunner({ q, mode, onExamSubmit, examAnswered }: { q: QueryQuestion
   const resultPanel = (
     <div className="space-y-3">
       {viz && (
-        <div className="inline-flex rounded-lg border border-zinc-200 bg-zinc-100/70 p-0.5 text-sm dark:border-zinc-800 dark:bg-zinc-900/70" role="tablist" aria-label={t('runner.view.aria')}>
+        <div className="segmented" role="tablist" aria-label={t('runner.view.aria')}>
           {(['result', 'plan'] as const).map((v) => (
-            <button key={v} type="button" role="tab" aria-selected={view === v} onClick={() => setView(v)} className={`rounded-md px-3 py-1 transition ${view === v ? 'bg-white font-medium shadow-sm dark:bg-zinc-800' : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'}`}>
+            <button key={v} type="button" role="tab" aria-selected={view === v} onClick={() => setView(v)} className="segment px-4">
               {v === 'result' ? t('runner.view.result') : t('runner.view.plan')}
             </button>
           ))}
         </div>
       )}
-      {busy && <p className="flex items-center gap-2 text-sm text-zinc-500"><span className="size-2 animate-pulse rounded-full bg-sky-500" />{busy === 'check' ? t('runner.busy.check') : busy === 'visualize' ? t('runner.busy.visualize') : t('runner.busy.run')}</p>}
+      {busy && <p className="flex items-center gap-2.5 text-[14px] text-zinc-500"><span className="size-4 animate-spin rounded-full border-2 border-sky-600/25 border-t-sky-600 dark:border-sky-400/25 dark:border-t-sky-400" />{busy === 'check' ? t('runner.busy.check') : busy === 'visualize' ? t('runner.busy.visualize') : t('runner.busy.run')}</p>}
       {view === 'plan' && viz && !busy && <QueryVisualizer viz={viz} />}
       {(view === 'result' || !viz) && <>
       {feedback && mode === 'practice' && <FeedbackView feedback={feedback} sql={sql} />}
       {feedback && mode === 'exam' && (
         feedback.kind === 'error' && feedback.error
           ? <FeedbackView feedback={feedback} summary={t('runner.exam.error')} sql={sql} />
-          : <p className="rounded-xl border border-sky-300/60 bg-sky-50/70 px-3 py-2 text-sm dark:border-sky-500/30 dark:bg-sky-500/10">{t('runner.exam.submitted')}</p>
+          : <p className="rounded-2xl bg-sky-600/[0.07] px-4 py-3 text-[15px] dark:bg-sky-400/[0.1]">{t('runner.exam.submitted')}</p>
       )}
       {mode === 'exam' && !feedback && examAnswered && <p className="text-sm text-zinc-500">{t('runner.exam.already')}</p>}
       {output && <RunResults output={output} sql={sql} />}
       {!output && !feedback && !busy && (
-        <div className="rounded-xl border border-dashed border-zinc-300 px-4 py-6 text-center text-sm text-zinc-500 dark:border-zinc-700">
+        <div className="well px-6 py-10 text-center text-[15px] leading-relaxed text-zinc-500">
           <Rich
             text={t('runner.emptyResult')}
             tags={{
-              b: (c) => <strong className="text-zinc-700 dark:text-zinc-300">{c}</strong>,
-              v: (c) => <strong className="text-violet-600 dark:text-violet-300">{c}</strong>,
-              c: (c) => <strong className="text-sky-600 dark:text-sky-400">{c}</strong>,
+              b: (c) => <strong className="font-semibold text-zinc-800 dark:text-zinc-200">{c}</strong>,
+              v: (c) => <strong className="font-semibold text-violet-700 dark:text-[#d99cf5]">{c}</strong>,
+              c: (c) => <strong className="font-semibold text-sky-700 dark:text-sky-400">{c}</strong>,
             }}
           />
         </div>
@@ -251,16 +251,18 @@ function QueryRunner({ q, mode, onExamSubmit, examAnswered }: { q: QueryQuestion
 
   return (
     <>
-      <div className={`${mode === 'practice' ? 'sticky top-14 z-20' : ''} -mx-4 flex gap-1 border-b border-zinc-200 bg-zinc-50/90 px-4 backdrop-blur lg:hidden dark:border-zinc-800 dark:bg-zinc-950/90`} role="tablist">
+      <div className={`${mode === 'practice' ? 'material sticky top-14 z-20' : ''} -mx-4 px-4 py-2 sm:-mx-6 sm:px-6 lg:hidden`}>
+        <div className="segmented flex w-full" role="tablist">
         {(['task', 'sql', 'result'] as const).map((x) => (
-          <button key={x} type="button" role="tab" aria-selected={tab === x} onClick={() => setTab(x)} className={`-mb-px border-b-2 px-3 py-2 text-sm ${tab === x ? 'border-sky-500 font-medium text-sky-700 dark:text-sky-300' : 'border-transparent text-zinc-500'}`}>
+          <button key={x} type="button" role="tab" aria-selected={tab === x} onClick={() => setTab(x)} className="segment flex-1 py-1.5">
             {x === 'task' ? t('runner.tab.task') : x === 'sql' ? t('runner.tab.sql') : feedback ? (feedback.pass ? t('runner.tab.resultOk') : t('runner.tab.resultBad')) : t('runner.tab.result')}
           </button>
         ))}
+        </div>
       </div>
       <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
         {/* On wide screens the task stays in view while results scroll; it scrolls on its own if taller than the screen. */}
-        <section className={`${tab === 'task' ? '' : 'hidden lg:block'} lg:sticky lg:top-20 lg:max-h-[calc(100dvh-6.5rem)] lg:self-start lg:overflow-y-auto lg:pb-1 lg:[scrollbar-width:thin]`}>{taskPanel}</section>
+        <section className={`${tab === 'task' ? '' : 'hidden lg:block'} lg:sticky lg:top-20 lg:-m-1.5 lg:max-h-[calc(100dvh-6rem)] lg:self-start lg:overflow-y-auto lg:p-1.5 lg:[scrollbar-width:thin]`}>{taskPanel}</section>
         <div className="space-y-4">
           <section className={tab === 'sql' ? '' : 'hidden lg:block'}>{sqlPanel}</section>
           <section className={tab === 'result' ? '' : 'hidden lg:block'}>{resultPanel}</section>
@@ -273,10 +275,10 @@ function QueryRunner({ q, mode, onExamSubmit, examAnswered }: { q: QueryQuestion
 function SolutionPanel({ q, onLoad }: { q: QueryQuestion; onLoad: (sql: string) => void }) {
   const t = useT();
   return (
-    <section className="panel space-y-3 p-4">
+    <section className="panel animate-materialize space-y-4 p-5 sm:p-6">
       <div className="flex items-center gap-2">
-        <h2 className="font-semibold">{t('runner.solution')}</h2>
-        <button type="button" onClick={() => onLoad(q.referenceSolution)} className="ml-auto text-xs text-sky-700 hover:underline dark:text-sky-400">
+        <h2 className="text-xl font-semibold">{t('runner.solution')}</h2>
+        <button type="button" onClick={() => onLoad(q.referenceSolution)} className="link ml-auto text-[14px]">
           {t('runner.loadIntoEditor')}
         </button>
       </div>
@@ -284,13 +286,13 @@ function SolutionPanel({ q, onLoad }: { q: QueryQuestion; onLoad: (sql: string) 
       <Markdown>{q.explanation}</Markdown>
       {q.alternativeSolutions.length > 0 && (
         <details>
-          <summary className="cursor-pointer text-sm font-medium">{t('runner.alternatives', { n: q.alternativeSolutions.length })}</summary>
+          <summary className="cursor-pointer text-[15px] font-medium text-sky-700 dark:text-sky-400">{t('runner.alternatives', { n: q.alternativeSolutions.length })}</summary>
           <div className="mt-2 space-y-2">{q.alternativeSolutions.map((s, i) => <SqlCode key={i} code={s} />)}</div>
         </details>
       )}
       <div>
-        <h3 className="text-sm font-medium">{t('common.commonMistakes')}</h3>
-        <ul className="mt-1 list-disc space-y-1 pl-5 text-sm">{q.commonMistakes.map((m, i) => <li key={i}><Markdown>{m}</Markdown></li>)}</ul>
+        <h3 className="text-[13px] font-semibold text-zinc-500">{t('common.commonMistakes')}</h3>
+        <ul className="mt-1.5 list-disc space-y-1 pl-5 text-[15px] marker:text-zinc-400">{q.commonMistakes.map((m, i) => <li key={i}><Markdown>{m}</Markdown></li>)}</ul>
       </div>
     </section>
   );
@@ -318,7 +320,7 @@ function ChoiceRunner({ q, mode, onExamSubmit, examAnswered }: { q: PredictQuest
 
   return (
     <div className="max-w-3xl space-y-5">
-      <div className="text-[15px]"><Markdown>{q.prompt}</Markdown></div>
+      <div className="text-[17px]"><Markdown>{q.prompt}</Markdown></div>
       {q.type === 'predict-output' && <SqlCode code={q.referenceSolution} />}
       <fieldset className={`grid gap-2.5 ${compact ? 'sm:grid-cols-2' : ''}`}>
         <legend className="sr-only">{t('runner.options')}</legend>
@@ -329,12 +331,12 @@ function ChoiceRunner({ q, mode, onExamSubmit, examAnswered }: { q: PredictQuest
           return (
             <label
               key={i}
-              className={`group flex cursor-pointer items-start gap-3 rounded-xl border p-3.5 transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-sky-500 ${reveal ? 'cursor-default' : ''} ${state === 'correct' ? 'border-emerald-400 bg-emerald-50 dark:border-emerald-500/50 dark:bg-emerald-500/10' : state === 'wrong' ? 'border-red-300 bg-red-50 dark:border-red-500/40 dark:bg-red-500/10' : selected ? 'border-sky-500 bg-sky-50 shadow-sm shadow-sky-500/10 dark:bg-sky-500/10' : 'border-zinc-200 bg-white/70 hover:border-sky-300 hover:bg-white dark:border-zinc-800 dark:bg-zinc-900/50 dark:hover:border-zinc-600 dark:hover:bg-zinc-900'}`}
+              className={`group flex cursor-pointer items-start gap-3.5 rounded-2xl p-4 transition-[box-shadow,background-color,transform] duration-200 active:scale-[0.99] has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-sky-600/30 ${reveal ? 'cursor-default active:scale-100' : ''} ${state === 'correct' ? 'bg-emerald-500/[0.08] ring-2 ring-emerald-500' : state === 'wrong' ? 'bg-red-500/[0.06] ring-2 ring-red-500' : selected ? 'bg-sky-600/[0.05] ring-2 ring-sky-600 dark:bg-sky-400/[0.08] dark:ring-sky-500' : 'bg-white shadow-[0_1px_2px_rgb(0_0_0/0.04)] ring-1 ring-black/[0.08] hover:ring-black/[0.16] dark:bg-zinc-900 dark:ring-white/[0.08] dark:hover:ring-white/[0.16]'}`}
             >
               <input type="radio" name={`opt-${q.id}`} aria-label={t('runner.optionAria', { letter })} checked={selected} onChange={() => setChoice(i)} className="sr-only" disabled={reveal} />
               <span
                 aria-hidden
-                className={`grid size-7 shrink-0 place-items-center rounded-lg border font-mono text-xs font-semibold transition ${state === 'correct' ? 'border-emerald-500 bg-emerald-500 text-white' : state === 'wrong' ? 'border-red-500 bg-red-500 text-white' : selected ? 'border-sky-500 bg-sky-500 text-white' : 'border-zinc-300 text-zinc-500 group-hover:border-sky-400 group-hover:text-sky-600 dark:border-zinc-700 dark:text-zinc-400 dark:group-hover:text-sky-300'}`}
+                className={`grid size-7 shrink-0 place-items-center rounded-full text-[13px] font-semibold transition-colors ${state === 'correct' ? 'bg-emerald-500 text-white' : state === 'wrong' ? 'bg-red-500 text-white' : selected ? 'bg-sky-600 text-white dark:bg-sky-500' : 'bg-black/[0.06] text-zinc-600 dark:bg-white/[0.1] dark:text-zinc-300'}`}
               >
                 {state === 'correct' ? '✓' : state === 'wrong' ? '✗' : letter}
               </span>
@@ -365,21 +367,21 @@ function ChoiceRunner({ q, mode, onExamSubmit, examAnswered }: { q: PredictQuest
       </div>
       {reveal && (
         <div className="space-y-3">
-          <p className={`rounded-md border px-3 py-2 text-sm font-semibold ${correct ? 'border-emerald-300 bg-emerald-50 text-emerald-900 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200' : 'border-amber-300 bg-amber-50 text-amber-950 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-100'}`}>
+          <p className={`animate-materialize rounded-2xl px-4 py-3.5 text-[15px] font-semibold ${correct ? 'bg-emerald-500/[0.1] text-emerald-900 dark:bg-emerald-500/15 dark:text-emerald-100' : 'bg-amber-500/[0.1] text-amber-950 dark:bg-amber-500/15 dark:text-amber-50'}`}>
             {correct ? t('runner.correct') : t('runner.wrong', { letter: String.fromCharCode(65 + q.correctOption) })}
           </p>
           {output && <RunResults output={output} sql={q.type === 'predict-output' ? q.referenceSolution : ''} />}
           <Markdown>{q.explanation}</Markdown>
           <div>
-            <h3 className="text-sm font-medium">{t('common.commonMistakes')}</h3>
-            <ul className="mt-1 list-disc space-y-1 pl-5 text-sm">{q.commonMistakes.map((m, i) => <li key={i}><Markdown>{m}</Markdown></li>)}</ul>
+            <h3 className="text-[13px] font-semibold text-zinc-500">{t('common.commonMistakes')}</h3>
+            <ul className="mt-1.5 list-disc space-y-1 pl-5 text-[15px] marker:text-zinc-400">{q.commonMistakes.map((m, i) => <li key={i}><Markdown>{m}</Markdown></li>)}</ul>
           </div>
         </div>
       )}
       {mode === 'practice' && !reveal && q.hints.length > 0 && <ChoiceHints q={q} />}
       {mode === 'practice' && (
-        <p className="text-xs text-zinc-500">
-          <Rich text={t('runner.experiment')} tags={{ a: (c) => <Link to="/playground" className="underline">{c}</Link> }} />
+        <p className="text-[13px] text-zinc-500">
+          <Rich text={t('runner.experiment')} tags={{ a: (c) => <Link to="/playground" className="link">{c}</Link> }} />
         </p>
       )}
     </div>
@@ -392,8 +394,8 @@ function ChoiceHints({ q }: { q: PredictQuestion | ConceptQuestion }) {
   return (
     <div className="space-y-2">
       {q.hints.slice(0, n).map((h, i) => (
-        <div key={i} className="rounded-xl border border-sky-200 bg-sky-50/80 px-3 py-2 text-sm dark:border-sky-500/20 dark:bg-sky-500/5">
-          <span className="mr-1 font-medium">{t('runner.hint', { n: i + 1 })}</span>
+        <div key={i} className="animate-materialize rounded-2xl bg-sky-600/[0.07] px-4 py-3 text-[15px] dark:bg-sky-400/[0.1]">
+          <span className="mb-1 block text-[13px] font-semibold text-sky-700 dark:text-sky-400">{t('runner.hint', { n: i + 1 })}</span>
           <Markdown>{h}</Markdown>
         </div>
       ))}
