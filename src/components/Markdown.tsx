@@ -23,15 +23,16 @@ function RunnableSql({ code }: { code: string }) {
     }
   };
   return (
-    <div className="not-prose my-3 space-y-2">
+    <div className="not-prose my-5 space-y-3">
       <div className="relative">
         <SqlCode code={code} />
         <button
           type="button"
           onClick={run}
           disabled={busy}
-          className="btn-primary absolute top-2 right-2 rounded-md px-2 py-0.5 text-xs"
+          className="btn-secondary absolute top-3 right-3 gap-1 px-3 py-1 text-[13px]"
         >
+          {!busy && <svg viewBox="0 0 12 12" className="size-2.5" fill="currentColor" aria-hidden><path d="M3 1.8v8.4c0 .5.5.8.9.5l6.6-4.2c.4-.2.4-.8 0-1L3.9 1.3C3.5 1 3 1.3 3 1.8Z" /></svg>}
           {busy ? t('example.running') : output ? t('example.runAgain') : t('example.run')}
         </button>
       </div>
@@ -53,12 +54,12 @@ export default function Markdown({ children, runnable = false }: { children: str
               const lang = /language-(\w+)/.exec(props.className ?? '')?.[1];
               const code = String(props.children ?? '').replace(/\n$/, '');
               if (lang === 'sql') return runnable ? <RunnableSql code={code} /> : <SqlCode code={code} className="my-3" />;
-              return <pre className="my-3 overflow-x-auto rounded-md bg-zinc-100 px-3 py-2 text-[13px] dark:bg-zinc-900"><code>{code}</code></pre>;
+              return <pre className="my-4 overflow-x-auto rounded-2xl bg-black/[0.04] px-5 py-4 text-[13px] leading-relaxed dark:bg-white/[0.06]"><code>{code}</code></pre>;
             }
             return <pre>{c}</pre>;
           },
           a: ({ href, children: c }) => (
-            <a href={href} target="_blank" rel="noreferrer" className="text-sky-700 underline dark:text-sky-400">{c}</a>
+            <a href={href} target="_blank" rel="noreferrer" className="text-sky-700 hover:underline dark:text-sky-400">{c}</a>
           ),
         }}
       >

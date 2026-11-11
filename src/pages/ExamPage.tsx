@@ -130,7 +130,7 @@ export default function ExamPage() {
             return (
               <li key={id} className="flex flex-wrap items-center gap-3 px-4 py-3 text-sm">
                 <span className={`grid size-6 shrink-0 place-items-center rounded-full text-xs font-semibold text-white ${passed ? 'bg-emerald-500' : 'bg-red-500'}`} aria-label={passed ? t('status.solved') : t('status.failed')}>{passed ? '✓' : '✗'}</span>
-                <span className="min-w-0 flex-1"><span className="mr-1 font-mono text-xs text-zinc-400">{i + 1}.</span>{q.title}</span>
+                <span className="min-w-0 flex-1"><span className="mr-1.5 text-[13px] text-zinc-400 tabular-nums">{i + 1}.</span>{q.title}</span>
                 <DifficultyBadge d={q.difficulty} />
                 <Link to={`/topic/${slug}/q/${id}`} className="font-medium text-sky-600 hover:underline dark:text-sky-400">{t('exam.reviewLink')} →</Link>
               </li>
@@ -149,7 +149,7 @@ export default function ExamPage() {
     <nav className="flex flex-wrap items-center gap-1 border-t border-black/[0.08] pt-4 dark:border-white/[0.08]" aria-label={t('exam.navAria')}>
       {exam.ids.map((id, i) => (
         <button key={id} type="button" onClick={() => save({ ...exam, index: i })} aria-current={i === exam.index}
-          className={`size-8 rounded-lg font-mono text-xs transition ${i === exam.index ? 'bg-sky-600 font-semibold text-white shadow-sm shadow-sky-600/30' : id in exam.answers ? 'bg-sky-500/15 text-sky-700 dark:text-sky-300' : 'border border-zinc-300 text-zinc-500 hover:border-sky-400 dark:border-zinc-700'}`}>
+          className={`size-9 rounded-full text-[13px] font-medium tabular-nums transition-[background-color,transform] active:scale-95 ${i === exam.index ? 'bg-sky-600 font-semibold text-white dark:bg-sky-500' : id in exam.answers ? 'bg-sky-600/[0.12] text-sky-700 dark:bg-sky-400/15 dark:text-sky-400' : 'bg-black/[0.05] text-zinc-600 hover:bg-black/[0.09] dark:bg-white/[0.08] dark:text-zinc-300'}`}>
           {i + 1}
         </button>
       ))}
@@ -158,7 +158,7 @@ export default function ExamPage() {
   return (
     <div className="space-y-3">
       <div className="material sticky top-14 z-20 -mx-4 flex items-center gap-3 px-4 py-2.5 text-sm sm:-mx-6 sm:px-6">
-        <span className={`rounded-lg px-2 py-0.5 font-mono text-base font-semibold tabular-nums ${remaining < 300 ? 'bg-red-500/10 text-red-600 dark:text-red-400' : 'bg-zinc-900/5 dark:bg-white/5'}`}>⏱ {fmtClock(remaining)}</span>
+        <span className={`rounded-lg px-2.5 py-0.5 text-[17px] font-semibold tabular-nums ${remaining < 300 ? 'bg-red-500/10 text-red-600 dark:text-red-400' : 'bg-black/[0.05] dark:bg-white/[0.08]'}`}>⏱ {fmtClock(remaining)}</span>
         <span className="text-zinc-500">{t('exam.status', { i: exam.index + 1, n: exam.ids.length, answered })}</span>
         <button type="button" onClick={() => { if (window.confirm(t('exam.confirmFinish'))) finish(exam); }} className="btn-secondary ml-auto">{t('exam.finish')}</button>
       </div>

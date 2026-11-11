@@ -36,7 +36,7 @@ export default function SchemaPage() {
           />
         }
       >
-        <div className="max-w-3xl rounded-xl border border-amber-300/70 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+        <div className="max-w-3xl rounded-2xl bg-amber-500/[0.1] px-5 py-3.5 text-[15px] text-amber-950 dark:bg-amber-500/15 dark:text-amber-100">
           <Rich text={t('schema.refBox', { date: manifest.referenceDate })} />
         </div>
       </PageHeader>
@@ -81,9 +81,9 @@ function TableCard({ table: t, highlight }: { table: TableMeta; highlight: strin
 
   return (
     <article id={`table-${t.name}`} className="panel scroll-mt-20 overflow-hidden">
-      <header className="border-b border-black/[0.08] px-4 py-3 dark:border-white/[0.08]">
+      <header className="border-b border-black/[0.06] px-5 py-4 dark:border-white/[0.07]">
         <div className="flex flex-wrap items-baseline gap-x-3">
-          <h3 className="font-mono text-base font-semibold">{t.name}</h3>
+          <h3 className="font-mono text-[17px] font-semibold tracking-normal">{t.name}</h3>
           <span className="text-sm text-zinc-500">{tr('common.rows', { n: t.rowCount.main ?? 0 })}</span>
         </div>
         {t.comment && <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{content.schemaComment(t.name, t.comment)}</p>}
@@ -93,27 +93,27 @@ function TableCard({ table: t, highlight }: { table: TableMeta; highlight: strin
           <colgroup><col className="w-[22%]" /><col className="w-[24%]" /><col className="w-[24%]" /><col /></colgroup>
           <thead className="text-[12px] font-semibold text-zinc-500">
             <tr>
-              <th className="px-4 py-2 font-medium">{tr('schema.col.column')}</th>
-              <th className="px-4 py-2 font-medium">{tr('schema.col.type')}</th>
-              <th className="px-4 py-2 font-medium">{tr('schema.col.keys')}</th>
-              <th className="px-4 py-2 font-medium">{tr('schema.col.notes')}</th>
+              <th className="px-5 py-2.5 font-semibold">{tr('schema.col.column')}</th>
+              <th className="px-5 py-2.5 font-semibold">{tr('schema.col.type')}</th>
+              <th className="px-5 py-2.5 font-semibold">{tr('schema.col.keys')}</th>
+              <th className="px-5 py-2.5 font-semibold">{tr('schema.col.notes')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-black/[0.06] dark:divide-white/[0.07]">
             {t.columns.map((c) => (
-              <tr key={c.name} className={highlight && c.name.includes(highlight) ? 'bg-sky-50 dark:bg-sky-950/40' : undefined}>
-                <td className="truncate px-4 py-1.5 font-mono" title={c.name}>{c.name}</td>
-                <td className="px-4 py-1.5 font-mono text-xs whitespace-nowrap text-zinc-600 dark:text-zinc-400">
+              <tr key={c.name} className={highlight && c.name.includes(highlight) ? 'bg-sky-600/[0.06] dark:bg-sky-400/[0.08]' : undefined}>
+                <td className="truncate px-5 py-2 font-mono" title={c.name}>{c.name}</td>
+                <td className="px-5 py-2 font-mono text-xs whitespace-nowrap text-zinc-600 dark:text-zinc-400">
                   {c.type}
                   {c.nullable ? '' : <span className="ml-1.5 text-zinc-400">NOT NULL</span>}
                 </td>
-                <td className="px-4 py-1.5">
+                <td className="px-5 py-2">
                   {pk.has(c.name) && <Badge tone="amber">PK</Badge>}
                   {fks.has(c.name) && <Badge tone="sky">FK → {fks.get(c.name)}</Badge>}
                   {uniqueCols.has(c.name) && <Badge tone="zinc">UNIQUE</Badge>}
                   {c.identity && <Badge tone="zinc">IDENTITY</Badge>}
                 </td>
-                <td className="px-4 py-1.5 text-zinc-600 dark:text-zinc-400">
+                <td className="px-5 py-2 text-zinc-600 dark:text-zinc-400">
                   {content.schemaComment(`${t.name}.${c.name}`, c.comment)}
                   {c.default && !c.identity && <span className="ml-1 font-mono text-xs text-zinc-400">{tr('schema.default', { value: c.default })}</span>}
                 </td>
@@ -123,7 +123,7 @@ function TableCard({ table: t, highlight }: { table: TableMeta; highlight: strin
         </table>
       </div>
       {(checks.length > 0 || compositePk || uniques.some((u) => u.columns.length > 1)) && (
-        <details className="border-t border-black/[0.08] px-4 py-2 text-sm dark:border-white/[0.08]">
+        <details className="border-t border-black/[0.06] px-5 py-3 text-sm dark:border-white/[0.07]">
           <summary className="cursor-pointer text-zinc-500">{tr('schema.constraints')}</summary>
           <ul className="mt-2 space-y-1 font-mono text-xs text-zinc-600 dark:text-zinc-400">
             {t.constraints.filter((c) => c.type !== 'f').map((c) => (
@@ -143,11 +143,11 @@ function TableCard({ table: t, highlight }: { table: TableMeta; highlight: strin
 
 function Badge({ tone, children }: { tone: 'amber' | 'sky' | 'zinc'; children: React.ReactNode }) {
   const cls = {
-    amber: 'bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300',
-    sky: 'bg-sky-100 text-sky-800 dark:bg-sky-900/50 dark:text-sky-300',
-    zinc: 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300',
+    amber: 'bg-amber-500/15 text-amber-700 dark:text-amber-500',
+    sky: 'bg-sky-600/10 text-sky-700 dark:bg-sky-400/15 dark:text-sky-400',
+    zinc: 'bg-black/[0.05] text-zinc-600 dark:bg-white/[0.08] dark:text-zinc-300',
   }[tone];
-  return <span className={`mr-1 inline-block rounded px-1.5 py-0.5 font-mono text-[11px] ${cls}`}>{children}</span>;
+  return <span className={`mr-1 mb-0.5 inline-block rounded-full px-2 py-0.5 font-mono text-[11px] ${cls}`}>{children}</span>;
 }
 
 function ErrorBox({ message }: { message: string }) {

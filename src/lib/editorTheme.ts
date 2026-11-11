@@ -1,25 +1,26 @@
-// CodeMirror themes matching the app's design system (ink-blue neutrals, electric-blue accent).
+// CodeMirror themes matching the app's Apple-style design system (Xcode source colours).
 import { HighlightStyle, syntaxHighlighting } from '@codemirror/language';
 import type { Extension } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 import { tags as t } from '@lezer/highlight';
 
 function build(dark: boolean): Extension {
+  // Xcode's default light and dark source-editor colours.
   const c = dark
-    ? { fg: '#dbe0eb', muted: '#67728a', gutter: '#4b556b', line: 'rgb(95 156 255 / 0.06)', sel: 'rgb(59 125 255 / 0.30)', caret: '#5f9cff', panel: '#131826', border: '#323a4d', keyword: '#7fb0ff', string: '#6ee7b7', number: '#fbbf24', type: '#c4b5fd', op: '#8b96ab', fn: '#67e8f9' }
-    : { fg: '#131826', muted: '#67728a', gutter: '#8b96ab', line: 'rgb(37 99 240 / 0.05)', sel: 'rgb(59 125 255 / 0.22)', caret: '#2563f0', panel: '#ffffff', border: '#dbe0eb', keyword: '#2563f0', string: '#047857', number: '#c2410c', type: '#7c3aed', op: '#4b556b', fn: '#0e7490' };
+    ? { fg: '#e5e5ea', muted: '#7f8c98', gutter: '#636366', line: 'rgb(255 255 255 / 0.04)', sel: 'rgb(10 132 255 / 0.32)', caret: '#0a84ff', panel: '#2c2c2e', border: 'rgb(255 255 255 / 0.1)', keyword: '#fc5fa3', string: '#fc6a5d', number: '#d0bf69', type: '#5dd8ff', op: '#a1a1a6', fn: '#67b7a4' }
+    : { fg: '#1d1d1f', muted: '#5d6c79', gutter: '#a1a1a6', line: 'rgb(0 113 227 / 0.05)', sel: 'rgb(0 113 227 / 0.18)', caret: '#0071e3', panel: '#ffffff', border: 'rgb(0 0 0 / 0.1)', keyword: '#9b2393', string: '#c41a16', number: '#1c00cf', type: '#0b4f79', op: '#3c3c43', fn: '#326d74' };
 
   const theme = EditorView.theme(
     {
-      '&': { color: c.fg, backgroundColor: 'transparent', fontSize: '14px' },
-      '.cm-content': { caretColor: c.caret, fontFamily: 'var(--font-mono)', padding: '10px 0' },
+      '&': { color: c.fg, backgroundColor: 'transparent', fontSize: '14.5px' },
+      '.cm-content': { caretColor: c.caret, fontFamily: 'var(--font-mono)', padding: '14px 0' },
       '.cm-scroller': { fontFamily: 'var(--font-mono)', lineHeight: '1.65' },
       '.cm-cursor, .cm-dropCursor': { borderLeftColor: c.caret, borderLeftWidth: '2px' },
       '&.cm-focused .cm-selectionBackground, .cm-selectionBackground, ::selection': { backgroundColor: `${c.sel} !important` },
       '.cm-activeLine': { backgroundColor: c.line },
       '.cm-gutters': { backgroundColor: 'transparent', color: c.gutter, border: 'none', paddingLeft: '4px' },
       '.cm-activeLineGutter': { backgroundColor: 'transparent', color: c.caret },
-      '.cm-tooltip': { backgroundColor: c.panel, border: `1px solid ${c.border}`, borderRadius: '8px', overflow: 'hidden' },
+      '.cm-tooltip': { backgroundColor: c.panel, border: `1px solid ${c.border}`, borderRadius: '12px', overflow: 'hidden', boxShadow: '0 12px 32px -8px rgb(0 0 0 / 0.25)' },
       '.cm-tooltip-autocomplete > ul > li[aria-selected]': { backgroundColor: c.sel, color: c.fg },
       '.cm-tooltip.cm-tooltip-lint': { fontFamily: 'var(--font-mono)', fontSize: '12px' },
       '.cm-matchingBracket': { backgroundColor: c.sel, outline: 'none' },
@@ -29,7 +30,7 @@ function build(dark: boolean): Extension {
   );
 
   const highlight = HighlightStyle.define([
-    { tag: [t.keyword, t.operatorKeyword, t.modifier], color: c.keyword, fontWeight: '500' },
+    { tag: [t.keyword, t.operatorKeyword, t.modifier], color: c.keyword, fontWeight: '600' },
     { tag: [t.string, t.special(t.string)], color: c.string },
     { tag: [t.number, t.bool, t.null, t.atom], color: c.number },
     { tag: [t.typeName, t.className], color: c.type },

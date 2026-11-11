@@ -38,20 +38,20 @@ export default function FeedbackView({ feedback, sql, summary }: { feedback: Fee
             ]}
             highlight={new Map([[1, f.firstMismatch.cells.map((c) => c + 1)]])}
             numbered={false}
-            maxHeight="200px"
+            maxHeight="260px"
           />
         </div>
       )}
       {f.missing && f.missing.length > 0 && (
         <div className="space-y-1">
           <p className="text-[13px] font-semibold">{t('feedback.missing', { first5: f.missing.length === 5 ? 1 : 0 })}</p>
-          <ResultTable columns={cols} rows={f.missing} numbered={false} maxHeight="200px" />
+          <ResultTable columns={cols} rows={f.missing} numbered={false} maxHeight="260px" />
         </div>
       )}
       {f.extra && f.extra.length > 0 && (
         <div className="space-y-1">
           <p className="text-[13px] font-semibold">{t('feedback.extra', { first5: f.extra.length === 5 ? 1 : 0 })}</p>
-          <ResultTable columns={f.actualColumns ?? cols} rows={f.extra} numbered={false} maxHeight="200px" />
+          <ResultTable columns={f.actualColumns ?? cols} rows={f.extra} numbered={false} maxHeight="260px" />
         </div>
       )}
     </div>

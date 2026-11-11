@@ -12,11 +12,11 @@ export default function SchemaQuickRef({ onInsert }: { onInsert?: (text: string)
   const [open, setOpen] = useState<string | null>(null);
   if (!manifest) return <p className="text-sm text-zinc-500">{t('common.loadingSchema')}</p>;
   return (
-    <div className="text-sm">
-      <p className="mb-2 text-xs text-zinc-500">
+    <div className="panel animate-materialize p-4 text-sm">
+      <p className="mb-3 text-[13px] text-zinc-500">
         <Rich text={t('schema.refDate', { date: manifest.referenceDate })} /> {onInsert ? t('schema.tapToInsert') : ''}
       </p>
-      <ul className="divide-y divide-black/[0.06] rounded-md border border-black/[0.08] dark:divide-white/[0.07] dark:border-white/[0.08]">
+      <ul className="well divide-y divide-black/[0.06] overflow-hidden dark:divide-white/[0.07]">
         {manifest.tables.map((tb) => {
           const pk = new Set(tb.constraints.filter((c) => c.type === 'p').flatMap((c) => c.columns));
           const fk = new Map(tb.constraints.filter((c) => c.type === 'f').map((c) => [c.columns[0], c.refTable]));
@@ -24,12 +24,12 @@ export default function SchemaQuickRef({ onInsert }: { onInsert?: (text: string)
           return (
             <li key={tb.name}>
               <div className="flex items-center">
-                <button type="button" onClick={() => setOpen(isOpen ? null : tb.name)} className="flex-1 px-2 py-1.5 text-left font-mono text-[13px] hover:bg-zinc-50 dark:hover:bg-zinc-800/60" aria-expanded={isOpen}>
+                <button type="button" onClick={() => setOpen(isOpen ? null : tb.name)} className="flex-1 px-3 py-2 text-left font-mono text-[13px] hover:bg-black/[0.03] dark:hover:bg-white/[0.04]" aria-expanded={isOpen}>
                   <span className="inline-block w-3 text-zinc-400">{isOpen ? '▾' : '▸'}</span> {tb.name}
                   <span className="ml-1 text-[11px] text-zinc-400">{tb.rowCount.main?.toLocaleString()}</span>
                 </button>
                 {onInsert && (
-                  <button type="button" onClick={() => onInsert(tb.name)} className="px-2 text-xs text-sky-700 hover:underline dark:text-sky-400" aria-label={t('schema.insertAria', { name: tb.name })}>
+                  <button type="button" onClick={() => onInsert(tb.name)} className="px-3 text-[13px] font-medium text-sky-700 hover:underline dark:text-sky-400" aria-label={t('schema.insertAria', { name: tb.name })}>
                     {t('schema.insert')}
                   </button>
                 )}

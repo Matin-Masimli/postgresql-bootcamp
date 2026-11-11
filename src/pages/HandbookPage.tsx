@@ -23,7 +23,7 @@ export default function HandbookPage() {
         <Link to="/" className="shrink-0 hover:text-sky-600 dark:hover:text-sky-300">{t('common.topics')}</Link>
         <span aria-hidden className="text-zinc-400">/</span>
         <Link to={`/topic/${slug}`} className="truncate hover:text-sky-600 dark:hover:text-sky-300">
-          <span className="font-mono text-xs text-sky-600 dark:text-sky-400">{String(meta.id).padStart(2, '0')}</span> {meta.title}
+          <span className="font-semibold text-zinc-400 tabular-nums">{String(meta.id).padStart(2, '0')}</span> {meta.title}
         </Link>
       </nav>
       <PageHeader
@@ -31,14 +31,14 @@ export default function HandbookPage() {
         title={t('handbook.title', { title: meta.title })}
         actions={<button type="button" onClick={() => window.print()} className="btn-secondary print:hidden">⎙ {t('handbook.print')}</button>}
       >
-        <p className="rounded-xl border border-amber-300/70 bg-amber-50 px-4 py-2.5 text-sm text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">{t('handbook.spoiler')}</p>
+        <p className="rounded-2xl bg-amber-500/[0.1] px-5 py-3.5 text-[15px] text-amber-950 dark:bg-amber-500/15 dark:text-amber-100">{t('handbook.spoiler')}</p>
       </PageHeader>
       <nav className="panel p-5 print:hidden" aria-label={t('handbook.contents')}>
         <p className="eyebrow mb-3">{t('handbook.contents')}</p>
         <ol className="gap-x-6 text-sm sm:columns-2 [&>li]:mb-1.5">
           {content.questions.map((q, i) => (
             <li key={q.id} className="flex min-w-0 break-inside-avoid gap-2">
-              <span className="w-5 shrink-0 text-right font-mono text-xs leading-5 text-zinc-400">{i + 1}</span>
+              <span className="w-5 shrink-0 text-right text-[13px] leading-5 text-zinc-400 tabular-nums">{i + 1}</span>
               <a href={`#${q.id}`} onClick={(e) => { e.preventDefault(); document.getElementById(q.id)?.scrollIntoView({ behavior: 'smooth' }); }} className="truncate text-zinc-700 hover:text-sky-600 dark:text-zinc-300 dark:hover:text-sky-300">{q.title}</a>
             </li>
           ))}
@@ -49,7 +49,7 @@ export default function HandbookPage() {
           <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
             <span className="chip">{q.id}</span><DifficultyBadge d={q.difficulty} /><span>{t(`type.${q.type}`)}</span>
           </div>
-          <h2 className="text-xl font-semibold tracking-tight"><span className="mr-2 font-mono text-base text-sky-600 dark:text-sky-400">{String(i + 1).padStart(2, '0')}</span>{q.title}</h2>
+          <h2 className="text-2xl font-semibold tracking-[-0.025em]"><span className="mr-2 text-zinc-400 tabular-nums">{String(i + 1).padStart(2, '0')}</span>{q.title}</h2>
           <Markdown>{q.prompt}</Markdown>
           {isQueryQuestion(q) ? (
             <>

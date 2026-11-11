@@ -144,7 +144,7 @@ export default function HomePage() {
     <div className="space-y-24 sm:space-y-32">
       {/* ── Hero ── */}
       <section className="space-y-14 pt-4 text-center sm:pt-10">
-        <div className="animate-fade-up mx-auto max-w-4xl space-y-6">
+        <div className="animate-fade-up mx-auto max-w-5xl space-y-6">
           <p className="eyebrow text-[15px]">{t('home.eyebrow')}</p>
           <h1 className="text-[2.75rem] leading-[1.04] font-bold tracking-[-0.035em] text-balance sm:text-6xl lg:text-[5rem]">
             {t('home.title1')}

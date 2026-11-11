@@ -126,7 +126,7 @@ export default function Layout() {
         <div className="mx-auto flex h-14 max-w-7xl items-center gap-2 px-4 sm:px-6">
           <NavLink to="/" className="mr-2 flex shrink-0 items-center gap-2.5" aria-label={t('nav.homeAria')}>
             <Logo />
-            <span className="font-display text-[15px] font-semibold tracking-[-0.015em] lg:max-xl:hidden">PostgreSQL Bootcamp</span>
+            <span className="font-display text-[15px] font-semibold tracking-[-0.015em] max-sm:hidden lg:max-xl:hidden">PostgreSQL Bootcamp</span>
           </NavLink>
           <nav className="hidden min-w-0 flex-1 items-center justify-center gap-1 lg:flex">
             {NAV.map((n) => (

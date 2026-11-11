@@ -73,7 +73,7 @@ export default function ErDiagram({ tables, onSelect }: { tables: TableMeta[]; o
           <circle cx="4" cy="4" r="3" className="fill-sky-600 dark:fill-sky-400" />
         </marker>
       </defs>
-      <g fill="none" strokeWidth={1.4} className="stroke-sky-600/45 dark:stroke-sky-400/45">
+      <g fill="none" strokeWidth={1.3} className="stroke-sky-600/40 dark:stroke-sky-400/40">
         {edges.map((e) => (
           <path key={e.key} d={e.d} markerEnd="url(#er-dot)" />
         ))}
@@ -81,8 +81,8 @@ export default function ErDiagram({ tables, onSelect }: { tables: TableMeta[]; o
       {[...boxes.values()].map((b) => (
         <g key={b.t.name} transform={`translate(${b.x},${b.y})`} className="cursor-pointer" onClick={() => onSelect(b.t.name)}>
           <title>{content.schemaComment(b.t.name, b.t.comment) ?? b.t.name}</title>
-          <rect width={BOX_W} height={b.h} rx={7} className="fill-white stroke-zinc-300 dark:fill-zinc-900 dark:stroke-zinc-700" />
-          <path d={`M0,7 a7,7 0 0 1 7,-7 h${BOX_W - 14} a7,7 0 0 1 7,7 v${HEAD_H - 9} h-${BOX_W} z`} className="fill-zinc-100 dark:fill-zinc-800" />
+          <rect width={BOX_W} height={b.h} rx={10} className="fill-white stroke-black/[0.1] transition-[stroke] hover:stroke-sky-600 dark:fill-zinc-800 dark:stroke-white/[0.1] dark:hover:stroke-sky-500" />
+          <path d={`M0,10 a10,10 0 0 1 10,-10 h${BOX_W - 20} a10,10 0 0 1 10,10 v${HEAD_H - 12} h-${BOX_W} z`} className="fill-zinc-50 dark:fill-white/[0.05]" />
           <text x={10} y={15} className="fill-zinc-900 text-[12px] font-semibold dark:fill-zinc-100">{b.t.name}</text>
           <text x={10} y={28} className="fill-zinc-500 text-[10px]">{t('common.rows', { n: b.t.rowCount.main ?? 0 })}</text>
           {b.keys.map((k, i) => (

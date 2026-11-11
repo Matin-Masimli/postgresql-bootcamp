@@ -234,7 +234,7 @@ export const az: Dict = {
   'err.timeout': '{seconds} saniyədən sonra dayandırıldı. Sorğu çox uzun çəkdi (təsadüfi cross join və ya sonsuz rekursiv CTE?). Verilənlər bazası yenidən başladıldı, yenidən cəhd edə bilərsiniz.',
 
   // ── runnable examples
-  'example.run': '▶ İcra et',
+  'example.run': 'İcra et',
   'example.runAgain': 'Yenidən icra et',
   'example.running': 'İcra olunur…',
 

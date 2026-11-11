@@ -50,7 +50,7 @@ export default function ProgressPage() {
           {stats.map(([k, v, suffix]) => (
             <div key={k} className="panel p-3 sm:p-4">
               <dt className="text-[13px] font-medium text-zinc-500">{k}</dt>
-              <dd className="mt-1 font-mono text-xl font-semibold tabular-nums sm:text-2xl">{v}{suffix && <span className="ml-1 text-sm font-normal text-zinc-500 sm:text-base">{suffix}</span>}</dd>
+              <dd className="mt-1 font-display text-2xl font-semibold tracking-[-0.02em] tabular-nums sm:text-3xl">{v}{suffix && <span className="ml-1 text-sm font-normal text-zinc-500 sm:text-base">{suffix}</span>}</dd>
             </div>
           ))}
         </dl>
@@ -58,7 +58,7 @@ export default function ProgressPage() {
           <div className="h-2 flex-1 overflow-hidden rounded-full bg-black/[0.07] dark:bg-white/[0.1]">
             <div className="h-full rounded-full bg-sky-600 dark:bg-sky-500 transition-[width] duration-700" style={{ width: `${pct}%` }} />
           </div>
-          <span className="font-mono text-sm font-semibold tabular-nums">{pct}%</span>
+          <span className="text-[15px] font-semibold tabular-nums">{pct}%</span>
         </div>
       </PageHeader>
 
@@ -74,12 +74,12 @@ export default function ProgressPage() {
               return (
                 <li key={topic.id}>
                   <Link to={`/topic/${topic.slug}`} className="group grid grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1.5 px-4 py-3 transition hover:bg-sky-50/60 sm:grid-cols-[2rem_minmax(0,1fr)_9rem_auto] dark:hover:bg-sky-500/5">
-                    <span className={`font-mono text-xs ${done ? 'text-emerald-600 dark:text-emerald-400' : 'text-sky-600 dark:text-sky-400'}`}>{done ? '✓' : String(topic.id).padStart(2, '0')}</span>
+                    <span className={`text-[13px] font-semibold tabular-nums ${done ? 'text-emerald-600 dark:text-emerald-500' : 'text-zinc-400'}`}>{done ? '✓' : String(topic.id).padStart(2, '0')}</span>
                     <span className="truncate text-sm font-medium group-hover:text-sky-700 dark:group-hover:text-sky-300">{topic.title}</span>
                     <span className="col-start-2 h-1.5 overflow-hidden rounded-full bg-zinc-200 sm:col-start-auto dark:bg-zinc-800">
                       <span className="block h-full rounded-full bg-sky-600 dark:bg-sky-500" style={{ width: `${qs.length ? (s / qs.length) * 100 : 0}%` }} />
                     </span>
-                    <span className="col-start-3 row-start-1 text-right font-mono text-xs whitespace-nowrap text-zinc-500 tabular-nums sm:col-start-auto sm:row-start-auto">{qs.length ? <><span className="sm:hidden">{s}/{qs.length}</span><span className="hidden sm:inline">{t('progress.topicRow', { solved: s, total: qs.length, tried: a })}</span></> : '—'}</span>
+                    <span className="col-start-3 row-start-1 text-right text-[13px] whitespace-nowrap text-zinc-500 tabular-nums sm:col-start-auto sm:row-start-auto">{qs.length ? <><span className="sm:hidden">{s}/{qs.length}</span><span className="hidden sm:inline">{t('progress.topicRow', { solved: s, total: qs.length, tried: a })}</span></> : '—'}</span>
                   </Link>
                 </li>
               );

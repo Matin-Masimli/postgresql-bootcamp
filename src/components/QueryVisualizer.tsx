@@ -9,12 +9,12 @@ const fmtRows = (n: number) => fmtNumber(n);
 const fmtMs = (n: number) => (n >= 100 ? `${Math.round(n)} ms` : n >= 1 ? `${n.toFixed(1)} ms` : `${n.toFixed(2)} ms`);
 
 const KIND: Record<NodeKind, { icon: string; tone: string; bar: string }> = {
-  scan: { icon: '▤', tone: 'bg-cyan-500/15 text-cyan-600 ring-cyan-500/30 dark:text-cyan-300', bar: 'bg-cyan-500' },
-  join: { icon: '⋈', tone: 'bg-violet-500/15 text-violet-600 ring-violet-500/30 dark:text-violet-300', bar: 'bg-violet-500' },
-  aggregate: { icon: 'Σ', tone: 'bg-amber-500/15 text-amber-600 ring-amber-500/30 dark:text-amber-300', bar: 'bg-amber-500' },
-  sort: { icon: '⇅', tone: 'bg-sky-500/15 text-sky-600 ring-sky-500/30 dark:text-sky-300', bar: 'bg-sky-500' },
-  modify: { icon: '✎', tone: 'bg-rose-500/15 text-rose-600 ring-rose-500/30 dark:text-rose-300', bar: 'bg-rose-500' },
-  other: { icon: '◇', tone: 'bg-zinc-500/15 text-zinc-600 ring-zinc-500/30 dark:text-zinc-300', bar: 'bg-zinc-400' },
+  scan: { icon: '▤', tone: 'bg-sky-600/10 text-sky-700 dark:bg-sky-400/15 dark:text-sky-400', bar: 'bg-sky-600 dark:bg-sky-500' },
+  join: { icon: '⋈', tone: 'bg-violet-500/12 text-violet-700 dark:bg-violet-500/20 dark:text-[#d99cf5]', bar: 'bg-violet-500' },
+  aggregate: { icon: 'Σ', tone: 'bg-amber-500/15 text-amber-700 dark:text-amber-500', bar: 'bg-amber-500' },
+  sort: { icon: '⇅', tone: 'bg-emerald-500/12 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-500', bar: 'bg-emerald-500' },
+  modify: { icon: '✎', tone: 'bg-red-500/10 text-red-600 dark:bg-red-500/15 dark:text-red-400', bar: 'bg-red-500' },
+  other: { icon: '◇', tone: 'bg-black/[0.05] text-zinc-600 dark:bg-white/[0.08] dark:text-zinc-300', bar: 'bg-zinc-400' },
 };
 
 export default function QueryVisualizer({ viz }: { viz: Visualization }) {
@@ -23,7 +23,7 @@ export default function QueryVisualizer({ viz }: { viz: Visualization }) {
     return (
       <div className="space-y-2">
         <ErrorBox error={viz.error} title={viz.error.code === 'VISUALIZE' ? t('viz.nothing') : undefined} />
-        {viz.error.code !== 'VISUALIZE' && <p className="text-xs text-zinc-500">{t('viz.fixFirst')}</p>}
+        {viz.error.code !== 'VISUALIZE' && <p className="text-[13px] text-zinc-500">{t('viz.fixFirst')}</p>}
       </div>
     );
   }
@@ -34,14 +34,14 @@ export default function QueryVisualizer({ viz }: { viz: Visualization }) {
   const totalMs = plan.executionMs ?? plan.root.totalMs ?? 0;
 
   return (
-    <div className="animate-fade-up space-y-5">
-      <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+    <div className="animate-fade-up space-y-7">
+      <div className="flex flex-wrap items-end gap-x-8 gap-y-3">
         <Metric label={t('viz.metric.output')} value={t('common.rows', { n: plan.root.rows })} />
         {plan.analyzed && plan.executionMs !== undefined && <Metric label={t('viz.metric.execution')} value={fmtMs(plan.executionMs)} />}
         {plan.planningMs !== undefined && <Metric label={t('viz.metric.planning')} value={fmtMs(plan.planningMs)} />}
         <Metric label={t('viz.metric.steps')} value={String(nodes.length)} />
         {!plan.analyzed && (
-          <span className="rounded-md border border-amber-400/40 bg-amber-500/10 px-2 py-0.5 text-xs text-amber-700 dark:text-amber-300" title={t('viz.estimatedTitle')}>
+          <span className="rounded-full bg-amber-500/15 px-2.5 py-0.5 text-[12px] font-medium text-amber-700 dark:text-amber-500" title={t('viz.estimatedTitle')}>
             {t('viz.estimatedOnly')}
           </span>
         )}
@@ -49,14 +49,14 @@ export default function QueryVisualizer({ viz }: { viz: Visualization }) {
 
       <section className="space-y-2">
         <h3 className="eyebrow">{t('viz.section1')}</h3>
-        <p className="text-xs text-zinc-500">{plan.analyzed ? t('viz.section1Help') : t('viz.section1HelpEstimated')}</p>
+        <p className="text-[13px] text-zinc-500">{plan.analyzed ? t('viz.section1Help') : t('viz.section1HelpEstimated')}</p>
         <LogicalFlow steps={steps} />
       </section>
 
       <section className="space-y-2">
         <h3 className="eyebrow">{t('viz.section2')}</h3>
-        <p className="text-xs text-zinc-500"><Rich text={t('viz.section2Help')} /></p>
-        <div className="panel overflow-x-auto p-2 sm:p-3">
+        <p className="text-[13px] text-zinc-500"><Rich text={t('viz.section2Help')} /></p>
+        <div className="panel overflow-x-auto p-3 sm:p-4">
           <PlanTree node={plan.root} depth={0} totalMs={totalMs} hottest={hottest} analyzed={plan.analyzed} />
         </div>
       </section>
@@ -67,8 +67,8 @@ export default function QueryVisualizer({ viz }: { viz: Visualization }) {
 function Metric({ label, value }: { label: string; value: string }) {
   return (
     <div className="leading-tight">
-      <div className="font-mono text-[10px] tracking-[0.12em] text-zinc-500 uppercase">{label}</div>
-      <div className="font-mono text-base font-semibold tabular-nums">{value}</div>
+      <div className="text-[12px] text-zinc-500 first-letter:uppercase">{label}</div>
+      <div className="font-display text-xl font-semibold tracking-[-0.02em] tabular-nums">{value}</div>
     </div>
   );
 }
@@ -82,7 +82,7 @@ function LogicalFlow({ steps }: { steps: LogicalStep[] }) {
       {steps.map((s) => {
         if (!s.present) {
           return (
-            <li key={s.id} className="flex items-center gap-3 px-3 py-1 text-zinc-400 dark:text-zinc-600" title={t('viz.notUsed', { label: s.label })}>
+            <li key={s.id} className="flex items-center gap-3 px-4 py-1.5 text-zinc-400 dark:text-zinc-600" title={t('viz.notUsed', { label: s.label })}>
               <span className="w-6 text-center font-mono text-[10px]">·</span>
               <span className="font-mono text-[11px] line-through decoration-zinc-400/50">{s.label}</span>
             </li>
@@ -91,19 +91,19 @@ function LogicalFlow({ steps }: { steps: LogicalStep[] }) {
         n++;
         const pct = s.rows !== undefined ? Math.max(1.5, (Math.log10(s.rows + 1) / Math.log10(max + 1)) * 100) : 0;
         return (
-          <li key={s.id} className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 px-3 py-2.5 sm:grid-cols-[auto_minmax(0,14rem)_minmax(0,1fr)] sm:items-center">
-            <span className="grid size-6 place-items-center rounded-full bg-sky-600 dark:bg-sky-500 font-mono text-[11px] font-semibold text-white shadow-md shadow-sky-500/30">{n}</span>
+          <li key={s.id} className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 px-4 py-3 sm:grid-cols-[auto_minmax(0,14rem)_minmax(0,1fr)] sm:items-center">
+            <span className="grid size-6 place-items-center rounded-full bg-sky-600 text-[12px] font-semibold text-white dark:bg-sky-500">{n}</span>
             <div className="min-w-0">
-              <div className="font-mono text-[13px] font-semibold text-sky-700 dark:text-sky-300">{s.label}</div>
-              <div className="text-xs text-zinc-500">{t(`step.${s.id}`)}</div>
+              <div className="font-mono text-[13px] font-semibold">{s.label}</div>
+              <div className="text-[13px] text-zinc-500">{t(`step.${s.id}`)}</div>
             </div>
             <div className="col-start-2 mt-1.5 min-w-0 sm:col-start-3 sm:mt-0">
               {s.rows !== undefined ? (
                 <div className="flex items-center gap-2">
-                  <div className="h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
-                    <div className="h-full rounded-full bg-linear-to-r from-sky-500 via-violet-500 to-cyan-400 bg-[length:200%_100%] animate-flow" style={{ width: `${pct}%` }} />
+                  <div className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-black/[0.06] dark:bg-white/[0.1]">
+                    <div className="h-full rounded-full bg-sky-600 transition-[width] duration-700 ease-(--ease-out-quint) dark:bg-sky-500" style={{ width: `${pct}%` }} />
                   </div>
-                  <span className="w-24 shrink-0 text-right font-mono text-xs tabular-nums">{t('common.rows', { n: s.rows })}</span>
+                  <span className="w-24 shrink-0 text-right text-[13px] tabular-nums">{t('common.rows', { n: s.rows })}</span>
                 </div>
               ) : (
                 <span className="text-xs text-zinc-400">{s.note ? t.msg(s.note) : t('viz.doneInPlan')}</span>
@@ -126,8 +126,8 @@ function PlanTree({ node, depth, totalMs, hottest, analyzed }: { node: PlanNode;
   const off = analyzed && node.estimatedRows > 0 && node.rows > 0 ? Math.max(node.rows / node.estimatedRows, node.estimatedRows / node.rows) : 1;
   return (
     <div className={depth > 0 ? 'relative ml-4 border-l border-black/[0.08] pl-3 sm:ml-5 sm:pl-4 dark:border-white/[0.08]' : ''}>
-      {depth > 0 && <span aria-hidden className="absolute top-6 -left-px h-px w-3 bg-zinc-200 sm:w-4 dark:bg-zinc-800" />}
-      <div className={`my-1.5 rounded-lg border p-2.5 transition ${hot ? 'border-rose-400/60 bg-rose-500/5 shadow-lg shadow-rose-500/10' : 'border-black/[0.08] bg-white/60 dark:border-white/[0.08] dark:bg-zinc-950/40'}`}>
+      {depth > 0 && <span aria-hidden className="absolute top-6 -left-px h-px w-3 bg-black/[0.08] sm:w-4 dark:bg-white/[0.08]" />}
+      <div className={`my-2 rounded-2xl p-3 transition ${hot ? 'bg-red-500/[0.05] ring-2 ring-red-500/70' : 'bg-black/[0.025] dark:bg-white/[0.04]'}`}>
         <div className="flex items-start gap-2.5">
           <button
             type="button"
@@ -135,20 +135,20 @@ function PlanTree({ node, depth, totalMs, hottest, analyzed }: { node: PlanNode;
             disabled={node.children.length === 0}
             aria-expanded={node.children.length ? open : undefined}
             aria-label={node.children.length ? (open ? t('viz.collapse') : t('viz.expand')) : undefined}
-            className={`grid size-7 shrink-0 place-items-center rounded-md text-sm ring-1 ${k.tone}`}
+            className={`grid size-8 shrink-0 place-items-center rounded-xl text-sm ${k.tone}`}
             title={t(`viz.kind.${node.kind}`)}
           >
             {k.icon}
           </button>
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-              <span className="text-sm font-semibold">{node.type}</span>
+              <span className="text-[15px] font-semibold">{node.type}</span>
               {node.target && <span className="chip">{node.target}</span>}
-              {node.role && <span className="chip border-violet-400/40 text-violet-600 dark:text-violet-300">{node.role}</span>}
-              {hot && <span className="rounded-md bg-rose-500 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-white uppercase">{t('viz.slowest')}</span>}
+              {node.role && <span className="chip text-violet-700 dark:text-[#d99cf5]">{node.role}</span>}
+              {hot && <span className="rounded-full bg-red-500 px-2 py-0.5 text-[11px] font-semibold text-white">{t('viz.slowest')}</span>}
               {!open && node.children.length > 0 && <span className="text-[11px] text-zinc-500">{t('viz.hidden', { n: walk(node).length - 1 })}</span>}
             </div>
-            <p className="mt-0.5 text-xs text-zinc-600 dark:text-zinc-400">{t.msg(node.description)}</p>
+            <p className="mt-0.5 text-[13px] text-zinc-600 dark:text-zinc-400">{t.msg(node.description)}</p>
             {node.details.length > 0 && (
               <div className="mt-1.5 flex flex-wrap gap-1">
                 {node.details.map((d, i) => (
@@ -160,8 +160,8 @@ function PlanTree({ node, depth, totalMs, hottest, analyzed }: { node: PlanNode;
               </div>
             )}
           </div>
-          <div className="shrink-0 text-right font-mono text-[11px] leading-5 tabular-nums">
-            <div className="text-sm font-semibold">{fmtRows(node.rows)}<span className="ml-1 text-[10px] font-normal text-zinc-500">{t('viz.rows')}</span></div>
+          <div className="shrink-0 text-right text-[12px] leading-5 tabular-nums">
+            <div className="text-[15px] font-semibold">{fmtRows(node.rows)}<span className="ml-1 text-[10px] font-normal text-zinc-500">{t('viz.rows')}</span></div>
             {node.loops > 1 && <div className="text-zinc-500" title={t('viz.loopsTitle')}>{t('viz.loops', { n: node.loops })}</div>}
             {node.rowsRemoved !== undefined && <div className="text-amber-600 dark:text-amber-400">{t('viz.filtered', { n: node.rowsRemoved })}</div>}
             {off >= 10 && <div className="text-zinc-500" title={t('viz.estimateTitle', { n: node.estimatedRows })}>{t('viz.estimate', { n: node.estimatedRows })}</div>}
@@ -169,8 +169,8 @@ function PlanTree({ node, depth, totalMs, hottest, analyzed }: { node: PlanNode;
           </div>
         </div>
         {share !== undefined && (
-          <div className="mt-2 h-1 overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800" title={t('viz.share', { pct: share.toFixed(0) })}>
-            <div className={`h-full rounded-full ${hot ? 'bg-rose-500' : k.bar}`} style={{ width: `${Math.max(share, 0.5)}%` }} />
+          <div className="mt-2.5 h-1 overflow-hidden rounded-full bg-black/[0.06] dark:bg-white/[0.1]" title={t('viz.share', { pct: share.toFixed(0) })}>
+            <div className={`h-full rounded-full ${hot ? 'bg-red-500' : k.bar}`} style={{ width: `${Math.max(share, 0.5)}%` }} />
           </div>
         )}
       </div>

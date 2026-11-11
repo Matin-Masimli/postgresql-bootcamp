@@ -47,7 +47,7 @@ export default function ReviewPage() {
     const nav = (
       <nav className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 border-t border-black/[0.08] pt-5 text-sm dark:border-white/[0.08]">
         <div><button type="button" disabled={session.index === 0} onClick={() => go(session.index - 1)} className="btn-ghost">{t('review.previous')}</button></div>
-        <span className="font-mono text-xs text-zinc-500 tabular-nums">{t('review.counter', { i: session.index + 1, n: session.ids.length })}</span>
+        <span className="text-[13px] text-zinc-500 tabular-nums">{t('review.counter', { i: session.index + 1, n: session.ids.length })}</span>
         <div className="text-right">
           {session.index + 1 < session.ids.length
             ? <button type="button" onClick={() => go(session.index + 1)} className="btn-secondary">{t('review.next')}</button>

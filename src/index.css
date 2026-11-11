@@ -134,7 +134,7 @@ code, kbd, pre { font-family: var(--font-mono); letter-spacing: 0; }
 }
 /* A text link with a chevron: Apple's "Learn more ›". */
 @utility link {
-  @apply inline-flex items-center gap-0.5 text-sky-700 hover:underline dark:text-sky-400;
+  @apply inline-flex items-center gap-1 text-sky-700 hover:underline dark:text-sky-400;
 }
 @utility chip {
   @apply inline-flex items-center gap-1 rounded-full bg-black/[0.05] px-2 py-0.5 font-mono text-[11px] text-zinc-600 dark:bg-white/[0.08] dark:text-zinc-300;

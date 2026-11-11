@@ -223,7 +223,7 @@ export const en = {
   'err.timeout': 'Stopped after {seconds} s. The query took too long (an accidental cross join or an endless recursive CTE?). The database was restarted, so you can try again.',
 
   // ── runnable examples
-  'example.run': '▶ Run',
+  'example.run': 'Run',
   'example.runAgain': 'Run again',
   'example.running': 'Running…',
 

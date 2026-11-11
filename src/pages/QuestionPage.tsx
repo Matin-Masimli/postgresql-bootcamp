@@ -25,7 +25,7 @@ export default function QuestionPage() {
         )}
       </div>
       <div className="flex flex-col items-center gap-1.5">
-        <span className="font-mono text-xs text-zinc-500 tabular-nums">{i + 1} / {questions.length}</span>
+        <span className="text-[13px] text-zinc-500 tabular-nums">{i + 1} / {questions.length}</span>
         <span className="h-1 w-20 overflow-hidden rounded-full bg-black/[0.07] dark:bg-white/[0.1]"><span className="block h-full rounded-full bg-sky-600 dark:bg-sky-500" style={{ width: `${pct}%` }} /></span>
       </div>
       <div className="min-w-0 text-right">
@@ -42,7 +42,7 @@ export default function QuestionPage() {
         <Link to="/" className="shrink-0 hover:text-sky-600 dark:hover:text-sky-300">{t('common.topics')}</Link>
         <span aria-hidden className="text-zinc-400">/</span>
         <Link to={`/topic/${slug}`} className="truncate hover:text-sky-600 dark:hover:text-sky-300">
-          <span className="font-mono text-xs text-sky-600 dark:text-sky-400">{String(meta.id).padStart(2, '0')}</span> {meta.title}
+          <span className="font-semibold text-zinc-400 tabular-nums">{String(meta.id).padStart(2, '0')}</span> {meta.title}
         </Link>
       </nav>
       <QuestionRunner key={qid} question={questions[i]} nav={nav} />

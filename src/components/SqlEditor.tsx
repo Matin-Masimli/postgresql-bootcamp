@@ -64,7 +64,7 @@ export default function SqlEditor({ value, onChange, onRun, error, readOnly, min
   }, [error]);
 
   return (
-    <div className="overflow-hidden rounded-xl border border-zinc-300 bg-white shadow-sm transition focus-within:border-sky-500 focus-within:ring-4 focus-within:ring-sky-500/15 dark:border-zinc-700/80 dark:bg-zinc-950/70 dark:shadow-inner dark:shadow-black/30">
+    <div className="overflow-hidden rounded-2xl bg-white shadow-[0_1px_2px_rgb(0_0_0/0.04)] ring-1 ring-black/[0.1] transition-shadow duration-200 focus-within:ring-2 focus-within:ring-sky-600 dark:bg-[#1e1e20] dark:shadow-none dark:ring-white/[0.1] dark:focus-within:ring-sky-500">
       <CodeMirror
         value={value}
         onChange={onChange}
