@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import { ALL_QUESTIONS } from '../../content/index.ts';
 import { TOPICS } from '../../content/topicList.ts';
 import { DifficultyBadge } from '../components/Badges.tsx';
+import Icon from '../components/Icons.tsx';
 import PageHeader from '../components/PageHeader.tsx';
 import { useContent } from '../i18n/content.ts';
 import { useT } from '../i18n/index.ts';
@@ -73,7 +74,7 @@ export default function ExamPage() {
     const hard = ALL_QUESTIONS.filter((q) => q.difficulty === 'hard' || q.difficulty === 'interview').length;
     return (
       <div className="max-w-3xl space-y-8">
-        <PageHeader eyebrow={t('exam.eyebrow')} title={t('exam.title')} intro={t('exam.intro')} />
+        <PageHeader title={t('exam.title')} intro={t('exam.intro')} />
         <section className="panel space-y-5 p-5 sm:p-6">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <h2 className="font-semibold">{t('exam.setup')}</h2>
@@ -117,7 +118,7 @@ export default function ExamPage() {
     const pct = Math.round((ok / exam.ids.length) * 100);
     return (
       <div className="max-w-3xl space-y-6">
-        <PageHeader eyebrow={t('exam.title')} title={t('exam.result', { ok, n: exam.ids.length, pct })}>
+        <PageHeader title={t('exam.result', { ok, n: exam.ids.length, pct })}>
           <div className="h-2 max-w-md overflow-hidden rounded-full bg-black/[0.07] dark:bg-white/[0.1]">
             <div className={`h-full rounded-full ${pct >= 70 ? 'bg-emerald-500' : pct >= 40 ? 'bg-amber-500' : 'bg-red-500'}`} style={{ width: `${pct}%` }} />
           </div>
@@ -129,7 +130,7 @@ export default function ExamPage() {
             const passed = exam.answers[id];
             return (
               <li key={id} className="flex flex-wrap items-center gap-3 px-4 py-3 text-sm">
-                <span className={`grid size-6 shrink-0 place-items-center rounded-full text-xs font-semibold text-white ${passed ? 'bg-emerald-500' : 'bg-red-500'}`} aria-label={passed ? t('status.solved') : t('status.failed')}>{passed ? '✓' : '✗'}</span>
+                <span className={`grid size-6 shrink-0 place-items-center rounded-full text-xs font-semibold text-white ${passed ? 'bg-emerald-500' : 'bg-red-500'}`} aria-label={passed ? t('status.solved') : t('status.failed')}>{passed ? <Icon name="check" /> : <Icon name="cross" />}</span>
                 <span className="min-w-0 flex-1"><span className="mr-1.5 text-[13px] text-zinc-400 tabular-nums">{i + 1}.</span>{q.title}</span>
                 <DifficultyBadge d={q.difficulty} />
                 <Link to={`/topic/${slug}/q/${id}`} className="font-medium text-sky-600 hover:underline dark:text-sky-400">{t('exam.reviewLink')} →</Link>

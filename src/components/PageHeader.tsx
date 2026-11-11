@@ -1,12 +1,11 @@
 import type { ReactNode } from 'react';
 
-/** The standard page heading: eyebrow, large title, optional intro and actions. Used by every secondary page. */
-export default function PageHeader({ eyebrow, title, intro, actions, children }: { eyebrow?: ReactNode; title: ReactNode; intro?: ReactNode; actions?: ReactNode; children?: ReactNode }) {
+/** The standard page heading: large title, optional intro and actions. Used by every secondary page. */
+export default function PageHeader({ title, intro, actions, children }: { title: ReactNode; intro?: ReactNode; actions?: ReactNode; children?: ReactNode }) {
   return (
     <header className="animate-fade-up space-y-3">
-      {eyebrow && <p className="eyebrow">{eyebrow}</p>}
       <div className="flex flex-wrap items-end gap-x-6 gap-y-4">
-        <h1 className="mr-auto text-4xl font-bold tracking-[-0.03em] text-balance sm:text-5xl">{title}</h1>
+        <h1 className="mr-auto text-4xl leading-[1.04] font-extrabold tracking-[-0.03em] text-balance sm:text-5xl">{title}</h1>
         {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
       </div>
       {intro && <p className="max-w-3xl pt-1 text-lg leading-relaxed text-zinc-600 sm:text-xl dark:text-zinc-400">{intro}</p>}

@@ -9,6 +9,7 @@ import type { Feedback, RunOutput } from '../engine/types.ts';
 import { visualize, type Visualization } from '../lib/visualize.ts';
 import { progress, statusOf, useProgress } from '../progress/store.ts';
 import { DifficultyBadge, StatusIcon } from './Badges.tsx';
+import Icon from './Icons.tsx';
 import FeedbackView from './FeedbackView.tsx';
 import Markdown from './Markdown.tsx';
 import QueryVisualizer from './QueryVisualizer.tsx';
@@ -162,7 +163,7 @@ function QueryRunner({ q, mode, onExamSubmit, examAnswered }: { q: QueryQuestion
           <div className="flex flex-wrap gap-2">
             {hints < q.hints.length && (
               <button type="button" className={btnSecondary} onClick={() => { setHints(hints + 1); progress.recordHint(q.id, hints + 1); }}>
-                {t('runner.hintButton', { n: hints + 1, total: q.hints.length })}
+                <Icon name="bulb" />{t('runner.hintButton', { n: hints + 1, total: q.hints.length })}
               </button>
             )}
             {!showSolution && (
@@ -191,13 +192,13 @@ function QueryRunner({ q, mode, onExamSubmit, examAnswered }: { q: QueryQuestion
       <SqlEditor value={sql} onChange={setSql} onRun={run} error={editorError} onReady={(api) => (editorApi.current = api)} />
       <div className="flex flex-wrap items-center gap-2">
         <button type="button" className={btnSecondary} onClick={run} disabled={!!busy} aria-label={t('runner.run')} title={t('runner.runTitle')}>
-          {busy === 'run' ? t('runner.running') : t('runner.run')}
+          {busy === 'run' ? t('runner.running') : <><Icon name="play" className="size-3" />{t('runner.run')}</>}
         </button>
         <button type="button" className="btn-visualize" onClick={explain} disabled={!!busy} title={t('runner.visualizeTitle')}>
-          {busy === 'visualize' ? t('runner.analyzing') : t('runner.visualize')}
+          {busy === 'visualize' ? t('runner.analyzing') : <><Icon name="plan" />{t('runner.visualize')}</>}
         </button>
         <button type="button" className={btnPrimary} onClick={check} disabled={!!busy}>
-          {busy === 'check' ? t('runner.checking') : mode === 'exam' ? t('runner.submit') : t('runner.check')}
+          {busy === 'check' ? t('runner.checking') : mode === 'exam' ? t('runner.submit') : <><Icon name="check" />{t('runner.check')}</>}
         </button>
         <button type="button" className={btnGhost} onClick={() => { if (sql === initial || window.confirm(t('runner.confirmReset'))) { setSql(initial); setOutput(null); setFeedback(null); setViz(null); } }}>
           {t('runner.reset')}
@@ -239,7 +240,7 @@ function QueryRunner({ q, mode, onExamSubmit, examAnswered }: { q: QueryQuestion
             text={t('runner.emptyResult')}
             tags={{
               b: (c) => <strong className="font-semibold text-zinc-800 dark:text-zinc-200">{c}</strong>,
-              v: (c) => <strong className="font-semibold text-violet-700 dark:text-[#d99cf5]">{c}</strong>,
+              v: (c) => <strong className="font-semibold text-teal-700 dark:text-teal-400">{c}</strong>,
               c: (c) => <strong className="font-semibold text-sky-700 dark:text-sky-400">{c}</strong>,
             }}
           />
@@ -255,7 +256,7 @@ function QueryRunner({ q, mode, onExamSubmit, examAnswered }: { q: QueryQuestion
         <div className="segmented flex w-full" role="tablist">
         {(['task', 'sql', 'result'] as const).map((x) => (
           <button key={x} type="button" role="tab" aria-selected={tab === x} onClick={() => setTab(x)} className="segment flex-1 py-1.5">
-            {x === 'task' ? t('runner.tab.task') : x === 'sql' ? t('runner.tab.sql') : feedback ? (feedback.pass ? t('runner.tab.resultOk') : t('runner.tab.resultBad')) : t('runner.tab.result')}
+            {x === 'task' ? t('runner.tab.task') : x === 'sql' ? t('runner.tab.sql') : feedback ? (feedback.pass ? <span className="inline-flex items-center gap-1">{t('runner.tab.resultOk')}<Icon name="check" className="size-3 text-emerald-600 dark:text-emerald-500" /></span> : t('runner.tab.resultBad')) : t('runner.tab.result')}
           </button>
         ))}
         </div>
@@ -338,7 +339,7 @@ function ChoiceRunner({ q, mode, onExamSubmit, examAnswered }: { q: PredictQuest
                 aria-hidden
                 className={`grid size-7 shrink-0 place-items-center rounded-full text-[13px] font-semibold transition-colors ${state === 'correct' ? 'bg-emerald-500 text-white' : state === 'wrong' ? 'bg-red-500 text-white' : selected ? 'bg-sky-600 text-white dark:bg-sky-500' : 'bg-black/[0.06] text-zinc-600 dark:bg-white/[0.1] dark:text-zinc-300'}`}
               >
-                {state === 'correct' ? '✓' : state === 'wrong' ? '✗' : letter}
+                {state === 'correct' ? <Icon name="check" /> : state === 'wrong' ? <Icon name="cross" /> : letter}
               </span>
               <span className="min-w-0 flex-1 pt-0.5">
                 {'text' in o ? <Markdown>{o.text}</Markdown> : <ResultTable columns={o.table.columns} rows={o.table.rows} numbered={false} maxHeight="220px" fixed />}
@@ -361,7 +362,7 @@ function ChoiceRunner({ q, mode, onExamSubmit, examAnswered }: { q: PredictQuest
         )}
         {reveal && q.type === 'predict-output' && (
           <button type="button" className={btnSecondary} onClick={async () => setOutput(await engine.run(q.referenceSolution).catch((e: unknown) => ({ statements: [], totalMs: 0, error: runError(e) })))}>
-            {t('runner.runQuery')}
+            <Icon name="play" className="size-3" />{t('runner.runQuery')}
           </button>
         )}
       </div>
@@ -401,7 +402,7 @@ function ChoiceHints({ q }: { q: PredictQuestion | ConceptQuestion }) {
       ))}
       {n < q.hints.length && (
         <button type="button" className={btnSecondary} onClick={() => { setN(n + 1); progress.recordHint(q.id, n + 1); }}>
-          {t('runner.hintButton', { n: n + 1, total: q.hints.length })}
+          <Icon name="bulb" />{t('runner.hintButton', { n: n + 1, total: q.hints.length })}
         </button>
       )}
     </div>

@@ -3,12 +3,14 @@ import { Link, useParams } from 'react-router';
 import type { Difficulty, Question } from '../../content/types.ts';
 import { DifficultyBadge, QUESTION_TYPES, StatusIcon } from '../components/Badges.tsx';
 import Markdown from '../components/Markdown.tsx';
+import { LineBadge, LineStrip } from '../components/Metro.tsx';
 import { useContent } from '../i18n/content.ts';
 import { useT } from '../i18n/index.ts';
+import { lineOf, lineVars, stationsFor } from '../lib/metro.ts';
 import { statusOf, useProgress, type QuestionStatus } from '../progress/store.ts';
 
 const LEVELS: Difficulty[] = ['easy', 'medium', 'hard', 'interview'];
-const LEVEL_BAR: Record<Difficulty, string> = { easy: 'bg-emerald-500', medium: 'bg-sky-600 dark:bg-sky-500', hard: 'bg-amber-500', interview: 'bg-violet-500' };
+const LEVEL_BAR: Record<Difficulty, string> = { easy: 'bg-emerald-500', medium: 'bg-sky-600 dark:bg-sky-500', hard: 'bg-amber-500', interview: 'bg-teal-500' };
 
 export default function TopicPage() {
   const t = useT();
@@ -37,16 +39,14 @@ export default function TopicPage() {
   const prev = TOPICS.find((x) => x.id === meta.id - 1);
   const next = TOPICS.find((x) => x.id === meta.id + 1);
   const pct = all.length ? Math.round((solved / all.length) * 100) : 0;
+  const stations = stationsFor(TOPICS, prog, c);
+  const station = stations.find((s) => s.topic.id === meta.id)!;
 
   return (
     <div className="space-y-14">
-      <header className="animate-fade-up space-y-4 border-b border-black/[0.08] pb-10 dark:border-white/[0.08]">
-        <nav aria-label={t('nav.breadcrumb')} className="flex items-center gap-1.5 text-[14px] text-zinc-500">
-          <Link to="/" className="hover:text-zinc-900 dark:hover:text-white">{t('topic.crumbLearn')}</Link>
-          <span aria-hidden className="text-zinc-300 dark:text-zinc-700">›</span>
-          <span>{t('topic.crumbTopic', { n: String(meta.id).padStart(2, '0') })}</span>
-        </nav>
-        <h1 className="text-4xl font-bold tracking-[-0.03em] text-balance sm:text-6xl">{meta.title}</h1>
+      <header className="space-y-5 border-b border-black/[0.08] pb-10 dark:border-white/[0.08]" style={lineVars(station.line.n)}>
+        <LineStrip station={station} stations={stations} />
+        <h1 className="animate-fade-up pt-3 text-4xl leading-[1.04] font-extrabold tracking-[-0.03em] text-balance sm:text-6xl">{meta.title}</h1>
         <p className="max-w-3xl text-lg leading-relaxed text-zinc-600 sm:text-[21px] dark:text-zinc-400">{meta.summary}</p>
         {t.locale !== 'en' && !c.isTranslated(meta.id) && (
           <p className="inline-block rounded-xl bg-amber-500/12 px-3 py-1.5 text-sm text-amber-800 dark:text-amber-200">{t('topic.notTranslated')}</p>
@@ -59,7 +59,7 @@ export default function TopicPage() {
             <Link to={`/topic/${meta.slug}/handbook`} className="link text-[16px]">{t('topic.handbook')} <span aria-hidden>›</span></Link>
             <div className="flex items-center gap-2.5 sm:ml-auto">
               <div className="h-1 w-36 overflow-hidden rounded-full bg-black/[0.07] dark:bg-white/[0.1]">
-                <div className="h-full rounded-full bg-sky-600 dark:bg-sky-500" style={{ width: `${pct}%` }} />
+                <div className="h-full rounded-full bg-(--lc)" style={{ width: `${pct}%` }} />
               </div>
               <span className="text-[13px] text-zinc-500 tabular-nums">{t('common.solvedOf', { solved, total: all.length })}</span>
             </div>
@@ -71,16 +71,12 @@ export default function TopicPage() {
         <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_17rem]">
           <div className="min-w-0 space-y-12">
             <section className="max-w-3xl">
-              <p className="eyebrow mb-3">{t('topic.lesson')}</p>
               <Markdown runnable>{content.explanation}</Markdown>
             </section>
 
             <section className="space-y-4" id="questions">
               <div className="flex flex-wrap items-center gap-2">
-                <div className="mr-auto">
-                  <p className="eyebrow">{t('topic.practice')}</p>
-                  <h2 className="text-3xl font-bold tracking-[-0.03em]">{t('topic.questions')}</h2>
-                </div>
+                <h2 className="mr-auto text-3xl font-extrabold tracking-[-0.03em]">{t('topic.questions')}</h2>
                 <select aria-label={t('topic.filter.difficulty')} className="field" value={difficulty} onChange={(e) => setDifficulty(e.target.value as Difficulty | 'all')}>
                   <option value="all">{t('topic.filter.allLevels')}</option>
                   {LEVELS.map((d) => <option key={d} value={d} className="capitalize">{t(`difficulty.${d}`)}</option>)}
@@ -113,7 +109,7 @@ export default function TopicPage() {
 
           <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
             <div className="panel space-y-3.5 p-5">
-              <p className="eyebrow">{t('topic.mix')}</p>
+              <p className="label">{t('topic.mix')}</p>
               {LEVELS.map((d) => {
                 const qs = all.filter((q) => q.difficulty === d);
                 const done = qs.filter((q) => prog.questions[q.id]?.solved).length;
@@ -133,7 +129,7 @@ export default function TopicPage() {
             </div>
             {content.sources.length > 0 && (
               <div className="panel p-5">
-                <p className="eyebrow mb-2">{t('topic.reading')}</p>
+                <p className="label mb-2">{t('topic.reading')}</p>
                 <ul className="space-y-2 text-sm">
                   {content.sources.map((s) => (
                     <li key={s.url}>
@@ -146,8 +142,18 @@ export default function TopicPage() {
               </div>
             )}
             <div className="grid grid-cols-2 gap-2 text-xs">
-              {prev ? <Link to={`/topic/${prev.slug}`} className="panel panel-hover px-4 py-3"><span className="block text-zinc-500">{t('topic.previous')}</span><span className="font-medium">{prev.title}</span></Link> : <span />}
-              {next && <Link to={`/topic/${next.slug}`} className="panel panel-hover px-4 py-3 text-right"><span className="block text-zinc-500">{t('topic.next')}</span><span className="font-medium">{next.title}</span></Link>}
+              {prev ? (
+                <Link to={`/topic/${prev.slug}`} className="panel panel-hover flex flex-col gap-1.5 px-4 py-3">
+                  <span className="text-zinc-500">{t('topic.previous')}</span>
+                  <span className="flex items-start gap-2 font-medium"><LineBadge n={lineOf(prev.id).n} className="mt-px size-[18px] text-[11px]" />{prev.title}</span>
+                </Link>
+              ) : <span />}
+              {next && (
+                <Link to={`/topic/${next.slug}`} className="panel panel-hover flex flex-col items-end gap-1.5 px-4 py-3 text-right">
+                  <span className="text-zinc-500">{t('topic.next')}</span>
+                  <span className="flex items-start gap-2 font-medium">{next.title}<LineBadge n={lineOf(next.id).n} className="mt-px size-[18px] text-[11px]" /></span>
+                </Link>
+              )}
             </div>
           </aside>
         </div>

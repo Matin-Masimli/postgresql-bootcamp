@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { HashRouter } from 'react-router';
 import App from './App.tsx';
 import '@fontsource-variable/inter';
+import '@fontsource-variable/overpass';
 import '@fontsource-variable/jetbrains-mono';
 import './index.css';
 

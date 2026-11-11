@@ -1,20 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { Link } from 'react-router';
-import type { TopicMeta } from '../../content/topicList.ts';
+import { LineBadge, LineBoard, MapLegend, MetroMap, PocketMap } from '../components/Metro.tsx';
 import SqlCode from '../components/SqlCode.tsx';
-import { useContent, type Content } from '../i18n/content.ts';
+import { useContent } from '../i18n/content.ts';
 import { useT } from '../i18n/index.ts';
 import Rich from '../i18n/Rich.tsx';
-import { currentStreak, useProgress, type ProgressData } from '../progress/store.ts';
-
-/** The course in five stages; topic ids are inclusive ranges in learning order. */
-const STAGES = [
-  { n: 1, from: 1, to: 4 },
-  { n: 2, from: 5, to: 7 },
-  { n: 3, from: 8, to: 13 },
-  { n: 4, from: 14, to: 18 },
-  { n: 5, from: 19, to: 21 },
-] as const;
+import { DRAW_END, LINES, currentStation, lineVars, stationsFor, type Station } from '../lib/metro.ts';
+import { currentStreak, useProgress } from '../progress/store.ts';
 
 /** Queries the hero terminal cycles through, each with a tiny result. */
 const DEMOS: { sql: string; columns: string[]; rows: string[][] }[] = [
@@ -94,13 +86,6 @@ function Terminal() {
   );
 }
 
-function topicStats(t: TopicMeta, p: ProgressData, content: Content) {
-  const qs = content.topic(t.id)?.questions ?? [];
-  const solved = qs.filter((q) => p.questions[q.id]?.solved).length;
-  const attempted = qs.filter((q) => (p.questions[q.id]?.attempts ?? 0) > 0).length;
-  return { total: qs.length, solved, attempted };
-}
-
 function Ring({ pct, size = 56 }: { pct: number; size?: number }) {
   const r = (size - 6) / 2;
   const c = 2 * Math.PI * r;
@@ -119,153 +104,176 @@ const ICONS = {
   tree: <path d="M12 5.5V9m0 0H7a2 2 0 0 0-2 2v2m7-4h5a2 2 0 0 1 2 2v2M10.5 2.5h3v3h-3zM3.5 13h3v3h-3zm14 0h3v3h-3zM5 16v2.5m14-2.5v2.5M3.5 18.5h3v3h-3zm14 0h3v3h-3z" />,
 } as const;
 
+/** Draw the map in on the first home visit of a session only; after that it is simply there. */
+function useFirstVisit(key: string): boolean {
+  const [first] = useState(() => {
+    try {
+      return sessionStorage.getItem(key) !== '1';
+    } catch {
+      return true;
+    }
+  });
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(key, '1');
+    } catch {
+      /* storage unavailable: the map just draws again next time */
+    }
+  }, [key]);
+  return first;
+}
+
+/** The passenger display: which station is next, on which line, and the way in. */
+function NextStop({ station, started, count }: { station: Station; started: boolean; count: number }) {
+  const t = useT();
+  return (
+    <Link
+      to={`/topic/${station.topic.slug}`}
+      style={{ ...lineVars(station.line.n), '--d': '120ms' } as CSSProperties}
+      className="metro-fade group relative block overflow-hidden rounded-[1.6rem] md:max-lg:max-w-md bg-zinc-950 p-6 pb-7 text-white shadow-[0_30px_60px_-24px_rgb(0_0_0/0.5)] ring-1 ring-white/10 transition-[translate,box-shadow] duration-200 ease-(--ease-out) hover:-translate-y-0.5 hover:shadow-[0_36px_70px_-24px_rgb(0_0_0/0.55)] active:translate-y-0 dark:bg-zinc-900"
+    >
+      <span className="flex items-center gap-2 text-[13px] font-semibold text-white/60">
+        <LineBadge n={station.line.n} className="size-6 text-[13px]" />
+        {started ? t('home.nextStop') : t('home.firstStop')}
+      </span>
+      <span className="mt-3 block font-display text-[28px] leading-[1.1] font-extrabold tracking-[-0.02em] text-balance">{station.topic.title}</span>
+      <span className="mt-1.5 block text-[14px] text-white/60 tabular-nums">
+        {t('home.stationOf', { n: station.topic.id, total: count })} · {t('common.solvedOf', { solved: station.solved, total: station.total })}
+      </span>
+      <span className="mt-6 flex flex-wrap items-center justify-between gap-3">
+        <span className="btn bg-white px-5 py-2 text-[15px] text-zinc-950 group-hover:bg-white/90">
+          {started ? t('home.continueShort') : t('home.start')}
+          <svg viewBox="0 0 16 16" className="size-3.5 transition-[translate] duration-200 ease-(--ease-out) group-hover:translate-x-0.5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M6 3.5 10.5 8 6 12.5" /></svg>
+        </span>
+        <span className="flex items-center gap-1.5 text-[12px] text-white/50"><span className="size-1.5 rounded-full bg-emerald-500" />{t('home.engine')}</span>
+      </span>
+      <span aria-hidden className="absolute inset-x-0 bottom-0 h-1.5 bg-(--lc)" />
+    </Link>
+  );
+}
+
 export default function HomePage() {
   const t = useT();
   const content = useContent();
-  const TOPICS = content.topics;
   const p = useProgress();
-  const streak = currentStreak(p.activeDays);
-  const stats = new Map(TOPICS.map((x) => [x.id, topicStats(x, p, content)]));
-  const total = [...stats.values()].reduce((s, x) => s + x.total, 0);
-  const solved = [...stats.values()].reduce((s, x) => s + x.solved, 0);
+  const stations = stationsFor(content.topics, p, content);
+  const current = currentStation(stations);
+  const total = stations.reduce((n, s) => n + s.total, 0);
+  const solved = stations.reduce((n, s) => n + s.solved, 0);
   const pct = total ? Math.round((solved / total) * 100) : 0;
-  // "Continue" = the first topic that has been started but not finished, else the first unfinished one.
-  const current = TOPICS.find((x) => { const s = stats.get(x.id)!; return s.attempted > 0 && s.solved < s.total; })
-    ?? TOPICS.find((x) => { const s = stats.get(x.id)!; return s.solved < s.total; });
   const started = solved > 0 || p.activeDays.length > 0;
+  const streak = currentStreak(p.activeDays);
+  const animate = useFirstVisit('pgb.mapDrawn');
 
   const features = [
-    { icon: ICONS.database, tint: 'text-sky-600 bg-sky-600/10 dark:text-sky-400 dark:bg-sky-400/15', title: t('home.feature1.title'), text: t('home.feature1.text') },
-    { icon: ICONS.shield, tint: 'text-emerald-600 bg-emerald-500/12 dark:text-emerald-500 dark:bg-emerald-500/15', title: t('home.feature2.title'), text: t('home.feature2.text') },
-    { icon: ICONS.tree, tint: 'text-violet-600 bg-violet-500/12 dark:text-[#d99cf5] dark:bg-violet-500/20', title: t('home.feature3.title'), text: t('home.feature3.text') },
+    { icon: ICONS.database, n: 1, title: t('home.feature1.title'), text: t('home.feature1.text') },
+    { icon: ICONS.shield, n: 2, title: t('home.feature2.title'), text: t('home.feature2.text') },
+    { icon: ICONS.tree, n: 5, title: t('home.feature3.title'), text: t('home.feature3.text') },
+  ];
+  const stats: [string, string][] = [
+    [t('home.stat.stations'), String(stations.length)],
+    [t('home.stat.lines'), String(LINES.length)],
+    [t('home.stat.questions'), String(total)],
+    [t('home.stat.solved'), String(solved)],
+    [t('home.stat.streak'), streak ? t('home.streakDays', { n: streak }) : '—'],
   ];
 
   return (
     <div className="space-y-24 sm:space-y-32">
-      {/* ── Hero ── */}
-      <section className="space-y-14 pt-4 text-center sm:pt-10">
-        <div className="animate-fade-up mx-auto max-w-5xl space-y-6">
-          <p className="eyebrow text-[15px]">{t('home.eyebrow')}</p>
-          <h1 className="text-[2.75rem] leading-[1.04] font-bold tracking-[-0.035em] text-balance sm:text-6xl lg:text-[5rem]">
-            {t('home.title1')}
-            <span className="block text-zinc-400 dark:text-zinc-500">{t('home.title2')}</span>
-          </h1>
-          <p className="mx-auto max-w-2xl text-lg leading-relaxed text-zinc-600 sm:text-[21px] dark:text-zinc-400">
-            <Rich
-              text={t('home.intro', { n: TOPICS.length })}
-              tags={{
-                code: (c) => <code className="font-mono text-[0.9em] text-zinc-900 dark:text-white">{c}</code>,
-                hl: (c) => <span className="font-medium text-zinc-900 dark:text-white">{c}</span>,
-              }}
-            />
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 pt-2">
-            {current && (
-              <Link to={`/topic/${current.slug}`} className="btn-primary px-6 py-3 text-[17px]">
-                {started ? t('home.continue', { title: current.title }) : t('home.start')}
-              </Link>
-            )}
-            <Link to="/playground" className="link text-[17px]">{t('home.openPlayground')} <span aria-hidden>›</span></Link>
+      {/* ── Hero: the network ── */}
+      <section className={`space-y-10 pt-2 sm:pt-6 ${animate ? 'metro-animate' : ''}`}>
+        <div className="grid items-end gap-10 lg:grid-cols-[minmax(0,1fr)_23rem]">
+          <div className="metro-fade space-y-6">
+            <h1 className="text-[2.6rem] leading-[1.02] font-extrabold tracking-[-0.035em] text-balance sm:text-6xl xl:text-[4.5rem]">
+              {t('home.title1')}
+              <span className="block text-zinc-400 dark:text-zinc-500">{t('home.title2')}</span>
+            </h1>
+            <p className="max-w-2xl text-lg leading-relaxed text-zinc-600 sm:text-xl dark:text-zinc-400">
+              <Rich
+                text={t('home.intro', { n: stations.length })}
+                tags={{
+                  code: (c) => <code className="font-mono text-[0.9em] text-zinc-900 dark:text-white">{c}</code>,
+                  hl: (c) => <span className="font-medium text-zinc-900 dark:text-white">{c}</span>,
+                }}
+              />
+            </p>
+            <div className="flex flex-wrap gap-x-6 gap-y-2 text-[16px]">
+              <Link to="/playground" className="link">{t('home.openPlayground')} <span aria-hidden>›</span></Link>
+              <Link to="/review" className="link">{t('nav.review')} <span aria-hidden>›</span></Link>
+              <Link to="/exam" className="link">{t('exam.title')} <span aria-hidden>›</span></Link>
+            </div>
           </div>
+          {current && <NextStop station={current} started={started} count={stations.length} />}
         </div>
-        <div className="animate-fade-up [animation-delay:120ms]">
+
+        <div className="lg:hidden"><PocketMap stations={stations} current={current} /></div>
+        <div className="hidden pt-14 pb-12 lg:block">
+          <MetroMap stations={stations} current={current} animate={animate} />
+        </div>
+
+        <div className="metro-fade flex flex-wrap items-center justify-between gap-x-10 gap-y-6 lg:border-t border-black/[0.08] pt-6 dark:border-white/[0.08]" style={{ '--d': `${DRAW_END - 200}ms` } as CSSProperties}>
+          <div className="hidden lg:block"><MapLegend /></div>
+          <dl className="grid w-full grid-cols-3 gap-x-6 gap-y-5 sm:flex sm:w-auto sm:flex-wrap sm:gap-x-9">
+            {stats.map(([k, v]) => (
+              <div key={k} className="flex flex-col-reverse gap-0.5">
+                <dt className="text-[13px] text-zinc-500">{k}</dt>
+                <dd className="font-display text-[26px] leading-none font-extrabold tracking-[-0.02em] tabular-nums">{v}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      </section>
+
+      {/* ── How a station works: a dark band, whatever the theme ── */}
+      <section className="dark relative mx-[calc(50%-50vw)] overflow-hidden bg-[#0c0c0e] text-zinc-100 [:root.dark_&]:bg-[#111113] [:root.dark_&]:shadow-[inset_0_1px_0_rgb(255_255_255/0.08),inset_0_-1px_0_rgb(255_255_255/0.08)]">
+        {/* The five lines run along the top edge of the band, then leave. */}
+        <svg aria-hidden className="absolute inset-x-0 top-0 h-[72px] w-full" preserveAspectRatio="none" viewBox="0 0 1440 72">
+          {LINES.map((l, i) => (
+            <path key={l.n} d={`M0 ${10 + i * 10} H1440`} fill="none" stroke={`var(--line-${l.n})`} strokeWidth="5" />
+          ))}
+        </svg>
+        <div className="mx-auto grid max-w-7xl items-center gap-14 px-4 pt-32 pb-24 sm:px-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:pt-36 lg:pb-28">
+          <div className="space-y-10">
+            <div className="space-y-4">
+              <h2 className="text-4xl leading-[1.05] font-extrabold tracking-[-0.03em] text-balance text-white sm:text-5xl">{t('home.how.title')}</h2>
+              <p className="max-w-xl text-lg leading-relaxed text-zinc-400">{t('home.how.text')}</p>
+            </div>
+            <ul className="space-y-7">
+              {features.map((f) => (
+                <li key={f.title} className="flex gap-4" style={lineVars(f.n)}>
+                  <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-[color-mix(in_srgb,var(--lc)_18%,transparent)] text-(--lc)">
+                    <svg viewBox="0 0 24 24" className="size-[22px]" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">{f.icon}</svg>
+                  </span>
+                  <span>
+                    <span className="block font-display text-[19px] font-bold tracking-[-0.01em] text-white">{f.title}</span>
+                    <span className="mt-1 block text-[15px] leading-relaxed text-zinc-400">{f.text}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
           <Terminal />
         </div>
-        <dl className="animate-fade-up mx-auto grid max-w-3xl grid-cols-2 gap-y-8 pt-6 [animation-delay:200ms] sm:grid-cols-4">
-          {[
-            [t('home.stat.topics'), String(TOPICS.length)],
-            [t('home.stat.questions'), String(total)],
-            [t('home.stat.solved'), `${solved}`],
-            [t('home.stat.streak'), streak ? t('home.streakDays', { n: streak }) : '—'],
-          ].map(([k, v]) => (
-            <div key={k} className="flex flex-col-reverse items-center gap-1">
-              <dt className="text-[14px] text-zinc-500">{k}</dt>
-              <dd className="font-display text-4xl font-semibold tracking-[-0.03em] tabular-nums">{v}</dd>
-            </div>
-          ))}
-        </dl>
       </section>
 
-      {/* ── Features ── */}
-      <section className="grid gap-5 md:grid-cols-3">
-        {features.map((f) => (
-          <div key={f.title} className="panel space-y-4 p-7 sm:p-8">
-            <span className={`grid size-12 place-items-center rounded-2xl ${f.tint}`}>
-              <svg viewBox="0 0 24 24" className="size-6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">{f.icon}</svg>
-            </span>
-            <h2 className="text-2xl font-semibold tracking-[-0.025em]">{f.title}</h2>
-            <p className="text-zinc-600 dark:text-zinc-400">{f.text}</p>
-          </div>
-        ))}
-      </section>
-
-      {/* ── The path ── */}
-      <section className="space-y-14">
+      {/* ── The lines, station by station ── */}
+      <section className="space-y-10">
         <div className="flex flex-wrap items-end gap-6">
-          <div className="mr-auto space-y-2">
-            <p className="eyebrow text-[15px]">{t('home.path.eyebrow')}</p>
-            <h2 className="text-4xl font-bold tracking-[-0.03em] text-balance sm:text-5xl">{t('home.path.title')}</h2>
+          <div className="mr-auto max-w-2xl space-y-3">
+            <h2 className="text-4xl leading-[1.05] font-extrabold tracking-[-0.03em] text-balance sm:text-5xl">{t('home.lines.title')}</h2>
+            <p className="text-lg text-zinc-600 dark:text-zinc-400">{t('home.lines.text')}</p>
           </div>
           <div className="flex items-center gap-4">
             <div className="relative">
               <Ring pct={pct} />
               <span className="absolute inset-0 grid place-items-center text-[13px] font-semibold tabular-nums">{pct}%</span>
             </div>
-            <div>
-              <div className="font-semibold">{t('common.solvedOf', { solved, total })}</div>
-              <div className="flex gap-4 text-[15px]">
-                <Link to="/review" className="link">{t('nav.review')} ›</Link>
-                <Link to="/exam" className="link">{t('exam.title')} ›</Link>
-              </div>
-            </div>
+            <span className="font-semibold">{t('common.solvedOf', { solved, total })}</span>
           </div>
         </div>
-
-        {STAGES.map((stage) => {
-          const topics = TOPICS.filter((x) => x.id >= stage.from && x.id <= stage.to);
-          const st = topics.map((x) => stats.get(x.id)!);
-          const sTotal = st.reduce((s, x) => s + x.total, 0);
-          const sSolved = st.reduce((s, x) => s + x.solved, 0);
-          return (
-            <div key={stage.n} className="grid gap-5 lg:grid-cols-[15rem_minmax(0,1fr)]">
-              <div className="space-y-1.5 lg:pt-3">
-                <p className="text-[13px] font-semibold text-zinc-500">{t('home.stage', { n: stage.n })}</p>
-                <h3 className="text-2xl font-semibold tracking-[-0.025em]">{t(`home.stage${stage.n}.name`)}</h3>
-                <p className="text-[15px] text-zinc-600 dark:text-zinc-400">{t(`home.stage${stage.n}.tagline`)}</p>
-                <p className="pt-1 text-[13px] text-zinc-500 tabular-nums">{t('common.solvedOf', { solved: sSolved, total: sTotal })}</p>
-              </div>
-              <ol className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                {topics.map((topic) => {
-                  const s = stats.get(topic.id)!;
-                  const done = s.total > 0 && s.solved === s.total;
-                  const isCurrent = current?.id === topic.id;
-                  return (
-                    <li key={topic.id}>
-                      <Link
-                        to={`/topic/${topic.slug}`}
-                        className={`panel panel-hover flex h-full flex-col p-5 ${isCurrent ? '!ring-2 !ring-sky-600 dark:!ring-sky-500' : ''}`}
-                      >
-                        <div className="flex items-center gap-2 text-[13px]">
-                          <span className="font-semibold text-zinc-400 tabular-nums">{String(topic.id).padStart(2, '0')}</span>
-                          {done && <span className="rounded-full bg-emerald-500/15 px-2 py-px text-[12px] font-semibold text-emerald-700 dark:text-emerald-500">{t('home.badge.done')}</span>}
-                          {isCurrent && !done && <span className="rounded-full bg-sky-600/10 px-2 py-px text-[12px] font-semibold text-sky-700 dark:bg-sky-400/15 dark:text-sky-400">{started ? t('home.badge.continue') : t('home.badge.startHere')}</span>}
-                        </div>
-                        <h4 className="mt-2 text-[19px] font-semibold tracking-[-0.02em]">{topic.title}</h4>
-                        <p className="mt-1 flex-1 text-[14px] leading-snug text-zinc-600 dark:text-zinc-400">{topic.summary}</p>
-                        <div className="mt-5 flex items-center gap-3">
-                          <div className="h-1 flex-1 overflow-hidden rounded-full bg-black/[0.07] dark:bg-white/[0.1]" role="progressbar" aria-valuenow={s.solved} aria-valuemin={0} aria-valuemax={s.total} aria-label={t('home.progressAria', { title: topic.title })}>
-                            <div className={`h-full rounded-full ${done ? 'bg-emerald-500' : 'bg-sky-600 dark:bg-sky-500'}`} style={{ width: `${s.total ? (s.solved / s.total) * 100 : 0}%` }} />
-                          </div>
-                          <span className="text-[12px] text-zinc-500 tabular-nums">{s.solved}/{s.total}</span>
-                        </div>
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ol>
-            </div>
-          );
-        })}
+        <div className="columns-1 gap-6 md:columns-2 xl:columns-3">
+          {LINES.map((l) => <LineBoard key={l.n} line={l} stations={stations} current={current} />)}
+        </div>
       </section>
     </div>
   );

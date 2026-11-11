@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
 import type { Topic } from '../../content/types.ts';
+import Icon from '../components/Icons.tsx';
 import PageHeader, { EmptyState } from '../components/PageHeader.tsx';
 import QuestionRunner from '../components/QuestionRunner.tsx';
 import { useContent } from '../i18n/content.ts';
@@ -58,7 +59,7 @@ export default function ReviewPage() {
     return (
       <div className="space-y-3">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-          <span className="eyebrow">{t('review.title')}</span>
+          <span className="label">{t('review.title')}</span>
           {topicMeta && <span className="text-zinc-500">{t('runner.topicLabel', { n: String(topicMeta.id).padStart(2, '0'), title: topicMeta.title })}</span>}
           <span className="ml-auto flex items-center gap-3">
             <span className="flex gap-1" aria-hidden>
@@ -74,10 +75,10 @@ export default function ReviewPage() {
 
   return (
     <div className="max-w-3xl space-y-8">
-      <PageHeader eyebrow={t('review.eyebrow')} title={t('review.title')} intro={t('review.intro', { n: SIZE })} />
+      <PageHeader title={t('review.title')} intro={t('review.intro', { n: SIZE })} />
       {topics.length === 0 ? (
         <EmptyState
-          icon="↻"
+          icon={<Icon name="loop" className="size-6" />}
           title={t('review.noneTitle')}
           text={t('review.noneText')}
           action={<Link to="/" className="btn-primary px-4 py-2">{t('review.pickTopic')} <span aria-hidden>→</span></Link>}

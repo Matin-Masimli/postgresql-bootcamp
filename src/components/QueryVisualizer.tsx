@@ -10,7 +10,7 @@ const fmtMs = (n: number) => (n >= 100 ? `${Math.round(n)} ms` : n >= 1 ? `${n.t
 
 const KIND: Record<NodeKind, { icon: string; tone: string; bar: string }> = {
   scan: { icon: '▤', tone: 'bg-sky-600/10 text-sky-700 dark:bg-sky-400/15 dark:text-sky-400', bar: 'bg-sky-600 dark:bg-sky-500' },
-  join: { icon: '⋈', tone: 'bg-violet-500/12 text-violet-700 dark:bg-violet-500/20 dark:text-[#d99cf5]', bar: 'bg-violet-500' },
+  join: { icon: '⋈', tone: 'bg-teal-500/12 text-teal-700 dark:bg-teal-500/20 dark:text-teal-400', bar: 'bg-teal-500' },
   aggregate: { icon: 'Σ', tone: 'bg-amber-500/15 text-amber-700 dark:text-amber-500', bar: 'bg-amber-500' },
   sort: { icon: '⇅', tone: 'bg-emerald-500/12 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-500', bar: 'bg-emerald-500' },
   modify: { icon: '✎', tone: 'bg-red-500/10 text-red-600 dark:bg-red-500/15 dark:text-red-400', bar: 'bg-red-500' },
@@ -48,13 +48,13 @@ export default function QueryVisualizer({ viz }: { viz: Visualization }) {
       </div>
 
       <section className="space-y-2">
-        <h3 className="eyebrow">{t('viz.section1')}</h3>
+        <h3 className="label">{t('viz.section1')}</h3>
         <p className="text-[13px] text-zinc-500">{plan.analyzed ? t('viz.section1Help') : t('viz.section1HelpEstimated')}</p>
         <LogicalFlow steps={steps} />
       </section>
 
       <section className="space-y-2">
-        <h3 className="eyebrow">{t('viz.section2')}</h3>
+        <h3 className="label">{t('viz.section2')}</h3>
         <p className="text-[13px] text-zinc-500"><Rich text={t('viz.section2Help')} /></p>
         <div className="panel overflow-x-auto p-3 sm:p-4">
           <PlanTree node={plan.root} depth={0} totalMs={totalMs} hottest={hottest} analyzed={plan.analyzed} />
@@ -144,7 +144,7 @@ function PlanTree({ node, depth, totalMs, hottest, analyzed }: { node: PlanNode;
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
               <span className="text-[15px] font-semibold">{node.type}</span>
               {node.target && <span className="chip">{node.target}</span>}
-              {node.role && <span className="chip text-violet-700 dark:text-[#d99cf5]">{node.role}</span>}
+              {node.role && <span className="chip text-teal-700 dark:text-teal-400">{node.role}</span>}
               {hot && <span className="rounded-full bg-red-500 px-2 py-0.5 text-[11px] font-semibold text-white">{t('viz.slowest')}</span>}
               {!open && node.children.length > 0 && <span className="text-[11px] text-zinc-500">{t('viz.hidden', { n: walk(node).length - 1 })}</span>}
             </div>

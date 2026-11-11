@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
-import { Link, NavLink, Outlet, useLocation } from 'react-router';
+import { useEffect, useLayoutEffect, useState } from 'react';
+import { flushSync } from 'react-dom';
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router';
 import { engine, useEngineStatus } from '../db/client.ts';
 import { LOCALES, setLocale, useLocale, useT } from '../i18n/index.ts';
 
@@ -86,6 +87,34 @@ function EngineIndicator() {
   );
 }
 
+/**
+ * Page changes run through the View Transitions API where the browser has it: the old page fades,
+ * the new one rises in, and a station with the same view-transition-name on both pages (the map
+ * dot and the topic page's station badge) travels from one to the other. Other browsers, and
+ * readers who ask for reduced motion, get the plain instant swap.
+ */
+function usePageTransitions() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (!('startViewTransition' in document)) return;
+    const onClick = (e: MouseEvent) => {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const a = (e.target as Element | null)?.closest?.('a');
+      if (!a || (a.target && a.target !== '_self') || a.hasAttribute('download')) return;
+      const href = a.getAttribute('href');
+      if (!href?.startsWith('#/')) return;
+      const to = href.slice(1);
+      if (to === window.location.hash.slice(1)) return;
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) return; // let the router handle it, no animation
+      e.preventDefault();
+      e.stopPropagation();
+      document.startViewTransition(() => flushSync(() => navigate(to)));
+    };
+    document.addEventListener('click', onClick, true);
+    return () => document.removeEventListener('click', onClick, true);
+  }, [navigate]);
+}
+
 const iconBtn = 'grid size-9 shrink-0 place-items-center rounded-full text-zinc-600 transition-[background-color,color,transform] duration-200 hover:bg-black/[0.05] hover:text-zinc-900 active:scale-95 dark:text-zinc-400 dark:hover:bg-white/[0.08] dark:hover:text-white';
 
 export default function Layout() {
@@ -95,11 +124,14 @@ export default function Layout() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
-  useEffect(() => {
+  // Layout effect: the new page must be at the top before a view transition snapshots it.
+  useLayoutEffect(() => {
     // Braces matter: newer browsers return a Promise from scrollTo, which must not become the effect cleanup.
     window.scrollTo(0, 0);
     setMenuOpen(false);
   }, [pathname]);
+
+  usePageTransitions();
 
   // Scroll edge effect: the bar only gains a hairline once content actually slides underneath it.
   useEffect(() => {
@@ -122,7 +154,7 @@ export default function Layout() {
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <header className={`material sticky top-0 z-40 transition-shadow duration-300 print:hidden ${scrolled || menuOpen ? 'shadow-[0_1px_0_rgb(0_0_0/0.08)] dark:shadow-[0_1px_0_rgb(255_255_255/0.08)]' : ''}`}>
+      <header className={`site-header material sticky top-0 z-40 transition-shadow duration-300 print:hidden ${scrolled || menuOpen ? 'shadow-[0_1px_0_rgb(0_0_0/0.08)] dark:shadow-[0_1px_0_rgb(255_255_255/0.08)]' : ''}`}>
         <div className="mx-auto flex h-14 max-w-7xl items-center gap-2 px-4 sm:px-6">
           <NavLink to="/" className="mr-2 flex shrink-0 items-center gap-2.5" aria-label={t('nav.homeAria')}>
             <Logo />

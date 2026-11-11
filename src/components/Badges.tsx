@@ -7,7 +7,7 @@ const DIFF: Record<Difficulty, string> = {
   easy: 'bg-emerald-500/12 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-500',
   medium: 'bg-sky-600/10 text-sky-700 dark:bg-sky-400/15 dark:text-sky-400',
   hard: 'bg-amber-500/15 text-amber-700 dark:bg-amber-500/15 dark:text-amber-500',
-  interview: 'bg-violet-500/12 text-violet-700 dark:bg-violet-500/20 dark:text-[#d99cf5]',
+  interview: 'bg-teal-500/12 text-teal-700 dark:bg-teal-500/20 dark:text-teal-400',
 };
 
 export const QUESTION_TYPES = ['write-query', 'fix-query', 'predict-output', 'concept-mc'] as const;

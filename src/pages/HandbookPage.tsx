@@ -3,7 +3,11 @@ import { isQueryQuestion } from '../../content/types.ts';
 import { DifficultyBadge } from '../components/Badges.tsx';
 import { useContent } from '../i18n/content.ts';
 import { useT } from '../i18n/index.ts';
+import Icon from '../components/Icons.tsx';
 import Markdown from '../components/Markdown.tsx';
+import { StationCrumb } from '../components/Metro.tsx';
+import { stationsFor } from '../lib/metro.ts';
+import { useProgress } from '../progress/store.ts';
 import PageHeader from '../components/PageHeader.tsx';
 import ResultTable from '../components/ResultTable.tsx';
 import SqlCode from '../components/SqlCode.tsx';
@@ -13,28 +17,22 @@ export default function HandbookPage() {
   const t = useT();
   const c = useContent();
   const { slug } = useParams();
+  const prog = useProgress();
   const meta = c.topics.find((x) => x.slug === slug);
   const content = meta ? c.topic(meta.id) : undefined;
   if (!meta || !content) return <p>{t('handbook.none')}</p>;
 
   return (
     <div className="mx-auto max-w-3xl space-y-8">
-      <nav aria-label={t('nav.breadcrumb')} className="flex min-w-0 items-center gap-1.5 text-sm text-zinc-500 print:hidden">
-        <Link to="/" className="shrink-0 hover:text-sky-600 dark:hover:text-sky-300">{t('common.topics')}</Link>
-        <span aria-hidden className="text-zinc-400">/</span>
-        <Link to={`/topic/${slug}`} className="truncate hover:text-sky-600 dark:hover:text-sky-300">
-          <span className="font-semibold text-zinc-400 tabular-nums">{String(meta.id).padStart(2, '0')}</span> {meta.title}
-        </Link>
-      </nav>
+      <StationCrumb station={stationsFor([meta], prog, c)[0]} className="print:hidden" />
       <PageHeader
-        eyebrow={t('handbook.eyebrow')}
         title={t('handbook.title', { title: meta.title })}
-        actions={<button type="button" onClick={() => window.print()} className="btn-secondary print:hidden">⎙ {t('handbook.print')}</button>}
+        actions={<button type="button" onClick={() => window.print()} className="btn-secondary print:hidden"><Icon name="print" />{t('handbook.print')}</button>}
       >
         <p className="rounded-2xl bg-amber-500/[0.1] px-5 py-3.5 text-[15px] text-amber-950 dark:bg-amber-500/15 dark:text-amber-100">{t('handbook.spoiler')}</p>
       </PageHeader>
       <nav className="panel p-5 print:hidden" aria-label={t('handbook.contents')}>
-        <p className="eyebrow mb-3">{t('handbook.contents')}</p>
+        <p className="label mb-3">{t('handbook.contents')}</p>
         <ol className="gap-x-6 text-sm sm:columns-2 [&>li]:mb-1.5">
           {content.questions.map((q, i) => (
             <li key={q.id} className="flex min-w-0 break-inside-avoid gap-2">
@@ -53,13 +51,13 @@ export default function HandbookPage() {
           <Markdown>{q.prompt}</Markdown>
           {isQueryQuestion(q) ? (
             <>
-              {q.starterSql && (<><h3 className="eyebrow pt-2 !text-zinc-500">{t('handbook.broken')}</h3><SqlCode code={q.starterSql} /></>)}
-              <h3 className="eyebrow pt-2 !text-zinc-500">{t('handbook.reference')}</h3>
+              {q.starterSql && (<><h3 className="label pt-2 !text-zinc-500">{t('handbook.broken')}</h3><SqlCode code={q.starterSql} /></>)}
+              <h3 className="label pt-2 !text-zinc-500">{t('handbook.reference')}</h3>
               <SqlCode code={q.referenceSolution} />
               <Markdown>{q.explanation}</Markdown>
               {q.alternativeSolutions.length > 0 && (
                 <>
-                  <h3 className="eyebrow pt-2 !text-zinc-500">{t('handbook.alternatives')}</h3>
+                  <h3 className="label pt-2 !text-zinc-500">{t('handbook.alternatives')}</h3>
                   {q.alternativeSolutions.map((s, k) => <SqlCode key={k} code={s} />)}
                 </>
               )}
@@ -67,14 +65,14 @@ export default function HandbookPage() {
           ) : (
             <>
               {q.type === 'predict-output' && <SqlCode code={q.referenceSolution} />}
-              <h3 className="eyebrow pt-2 !text-zinc-500">{t('handbook.answer', { letter: String.fromCharCode(65 + q.correctOption) })}</h3>
+              <h3 className="label pt-2 !text-zinc-500">{t('handbook.answer', { letter: String.fromCharCode(65 + q.correctOption) })}</h3>
               {q.type === 'predict-output'
                 ? <ResultTable columns={q.options[q.correctOption].table.columns} rows={q.options[q.correctOption].table.rows} numbered={false} />
                 : <Markdown>{q.options[q.correctOption].text}</Markdown>}
               <Markdown>{q.explanation}</Markdown>
             </>
           )}
-          <h3 className="eyebrow pt-2 !text-zinc-500">{t('common.commonMistakes')}</h3>
+          <h3 className="label pt-2 !text-zinc-500">{t('common.commonMistakes')}</h3>
           <ul className="list-disc space-y-1 pl-5 text-sm">{q.commonMistakes.map((m, k) => <li key={k}><Markdown>{m}</Markdown></li>)}</ul>
           <Link to={`/topic/${slug}/q/${q.id}`} className="inline-block text-sm font-medium text-sky-600 hover:underline print:hidden dark:text-sky-400">{t('handbook.practise')}</Link>
         </section>

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import Icon from '../components/Icons.tsx';
 import PageHeader from '../components/PageHeader.tsx';
 import QueryVisualizer from '../components/QueryVisualizer.tsx';
 import RunResults from '../components/RunResults.tsx';
@@ -87,9 +88,8 @@ export default function PlaygroundPage() {
   return (
     <div className="space-y-5">
       <PageHeader
-        eyebrow={t('playground.eyebrow')}
         title={t('playground.title')}
-        intro={<Rich text={t('playground.intro')} tags={{ v: (c) => <strong className="text-violet-600 dark:text-violet-300">{c}</strong> }} />}
+        intro={<Rich text={t('playground.intro')} tags={{ v: (c) => <strong className="text-teal-600 dark:text-teal-300">{c}</strong> }} />}
       />
       {generation !== firstGen.current && (
         <p className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
@@ -99,10 +99,10 @@ export default function PlaygroundPage() {
       <SqlEditor value={sql} onChange={setSql} onRun={run} minHeight="220px" error={output?.error?.offset !== undefined ? { offset: output.error.offset, message: output.error.message } : null} onReady={(api) => (editor.current = api)} />
       <div className="flex flex-wrap items-center gap-2">
         <button type="button" onClick={run} disabled={!!busy} className="btn-primary" aria-label={t('runner.run')} title={t('runner.runTitle')}>
-          {busy === 'run' ? t('runner.running') : t('runner.run')}
+          {busy === 'run' ? t('runner.running') : <><Icon name="play" className="size-3" />{t('runner.run')}</>}
         </button>
         <button type="button" onClick={explain} disabled={!!busy} className="btn-visualize" title={t('playground.visualizeTitle')}>
-          {busy === 'visualize' ? t('runner.analyzing') : t('runner.visualize')}
+          {busy === 'visualize' ? t('runner.analyzing') : <><Icon name="plan" />{t('runner.visualize')}</>}
         </button>
         <button type="button" onClick={reset} disabled={!!busy} className="btn-secondary">
           {busy === 'reset' ? t('playground.resetting') : t('playground.reset')}

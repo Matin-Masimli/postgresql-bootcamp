@@ -27,7 +27,6 @@ export default function SchemaPage() {
   return (
     <div className="space-y-10">
       <PageHeader
-        eyebrow={t('schema.eyebrow')}
         title={t('schema.title')}
         intro={
           <Rich

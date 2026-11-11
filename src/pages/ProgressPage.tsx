@@ -1,14 +1,17 @@
 import { useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { TOPIC_CONTENT } from '../../content/index.ts';
+import { MapLegend, MetroMap, StationDot } from '../components/Metro.tsx';
 import PageHeader from '../components/PageHeader.tsx';
 import { useContent } from '../i18n/content.ts';
 import { useT } from '../i18n/index.ts';
+import { currentStation, lineVars, stationsFor } from '../lib/metro.ts';
 import { currentStreak, localDay, progress, useProgress } from '../progress/store.ts';
 
 export default function ProgressPage() {
   const t = useT();
-  const TOPICS = useContent().topics;
+  const content = useContent();
+  const TOPICS = content.topics;
   const p = useProgress();
   const fileRef = useRef<HTMLInputElement>(null);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
@@ -37,6 +40,8 @@ export default function ProgressPage() {
   };
 
   const pct = total ? Math.round((solved / total) * 100) : 0;
+  const stations = stationsFor(TOPICS, p, content);
+  const current = currentStation(stations);
   const stats: [string, string, string?][] = [
     [t('progress.solved'), `${solved}`, `/ ${total}`],
     [t('progress.attempted'), `${attempted}`],
@@ -45,7 +50,7 @@ export default function ProgressPage() {
 
   return (
     <div className="space-y-8">
-      <PageHeader eyebrow={t('progress.eyebrow')} title={t('progress.title')}>
+      <PageHeader title={t('progress.title')}>
         <dl className="grid max-w-3xl grid-cols-3 gap-2 pt-2 sm:gap-3">
           {stats.map(([k, v, suffix]) => (
             <div key={k} className="panel p-3 sm:p-4">
@@ -62,22 +67,26 @@ export default function ProgressPage() {
         </div>
       </PageHeader>
 
+      <section className="hidden space-y-8 pt-16 lg:block">
+        <MetroMap stations={stations} current={current} animate={false} />
+        <div className="pt-10"><MapLegend /></div>
+      </section>
+
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <section className="space-y-3">
           <h2 className="font-semibold">{t('progress.byTopic')}</h2>
           <ul className="panel divide-y divide-black/[0.06] overflow-hidden dark:divide-white/[0.07]">
-            {TOPICS.map((topic) => {
+            {stations.map(({ topic, ...station }) => {
               const qs = TOPIC_CONTENT.find((c) => c.id === topic.id)?.questions ?? [];
               const s = qs.filter((q) => p.questions[q.id]?.solved).length;
               const a = qs.filter((q) => (p.questions[q.id]?.attempts ?? 0) > 0).length;
-              const done = qs.length > 0 && s === qs.length;
               return (
-                <li key={topic.id}>
+                <li key={topic.id} style={lineVars(station.line.n)}>
                   <Link to={`/topic/${topic.slug}`} className="group grid grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1.5 px-4 py-3 transition hover:bg-sky-50/60 sm:grid-cols-[2rem_minmax(0,1fr)_9rem_auto] dark:hover:bg-sky-500/5">
-                    <span className={`text-[13px] font-semibold tabular-nums ${done ? 'text-emerald-600 dark:text-emerald-500' : 'text-zinc-400'}`}>{done ? '✓' : String(topic.id).padStart(2, '0')}</span>
+                    <StationDot s={{ topic, ...station }} size={24} />
                     <span className="truncate text-sm font-medium group-hover:text-sky-700 dark:group-hover:text-sky-300">{topic.title}</span>
                     <span className="col-start-2 h-1.5 overflow-hidden rounded-full bg-zinc-200 sm:col-start-auto dark:bg-zinc-800">
-                      <span className="block h-full rounded-full bg-sky-600 dark:bg-sky-500" style={{ width: `${qs.length ? (s / qs.length) * 100 : 0}%` }} />
+                      <span className="block h-full rounded-full bg-(--lc)" style={{ width: `${qs.length ? (s / qs.length) * 100 : 0}%` }} />
                     </span>
                     <span className="col-start-3 row-start-1 text-right text-[13px] whitespace-nowrap text-zinc-500 tabular-nums sm:col-start-auto sm:row-start-auto">{qs.length ? <><span className="sm:hidden">{s}/{qs.length}</span><span className="hidden sm:inline">{t('progress.topicRow', { solved: s, total: qs.length, tried: a })}</span></> : '—'}</span>
                   </Link>

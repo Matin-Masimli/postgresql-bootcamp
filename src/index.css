@@ -3,14 +3,14 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /*
- * Design system: Apple-style, after the WWDC design guidance (see the apple-design skill).
- * Restraint first: neutral greys, one accent (Apple blue), generous space, type that does the work.
- * The neutral scale (zinc) and the accent (sky) are remapped here, so every utility class in the app
- * picks up the system colours. Light: #f5f5f7 page, white surfaces. Dark: black page, #1c1c1e surfaces.
+ * Design system: "the line". The course is a metro network: five coloured lines (the stages),
+ * twenty-one stations (the topics). Apple's neutral greys carry the page; colour belongs to the
+ * lines and nothing else. Display type is Overpass, a face drawn after highway and transit
+ * signage; body text stays in the system face for reading. See DESIGN.md.
  */
 @theme {
   --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter Variable", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
-  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter Variable", "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+  --font-display: "Overpass Variable", -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter Variable", "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
   --font-mono: ui-monospace, "SF Mono", "JetBrains Mono Variable", Menlo, Consolas, monospace;
 
   /* Apple system greys (light → dark). */
@@ -44,11 +44,17 @@
   --color-emerald-600: #28a745;
   --color-amber-500: #ff9f0a;
   --color-red-500: #ff3b30;
-  --color-violet-500: #af52de;
-  --color-violet-600: #9a3fc9;
+  /* Teal replaces violet as the "visualize / interview" tone (no purple on this network). */
+  --color-teal-400: #5ac8dc;
+  --color-teal-500: #12a5bd;
+  --color-teal-600: #0b8ca0;
+  --color-teal-700: #08697a;
 
   --ease-apple: cubic-bezier(0.25, 0.1, 0.25, 1);
   --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Motion curves (animate skill): strong ease-out for entrances, ease-in-out for things moving on screen. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 
   --animate-fade-up: fade-up 0.6s var(--ease-out-quint) both;
   --animate-materialize: materialize 0.35s var(--ease-out-quint) both;
@@ -58,14 +64,56 @@
   from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: none; }
 }
+/* A metro line drawing itself (path has pathLength="1"). */
+@keyframes draw {
+  from { stroke-dashoffset: 1; opacity: 0; }
+  4% { opacity: 1; }
+  to { stroke-dashoffset: 0; opacity: 1; }
+}
+/* A station arriving as the line reaches it: from 0.6 and transparent, never from nothing. */
+@keyframes station-in {
+  from { opacity: 0; transform: scale(0.6); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes label-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+/* "You are here": a ring that keeps leaving the station. */
+@keyframes here {
+  from { opacity: 0.55; transform: scale(1); }
+  to { opacity: 0; transform: scale(2.4); }
+}
 /* Glass surfaces arrive as a material: blur and scale together, not a plain fade. */
 @keyframes materialize {
   from { opacity: 0; transform: scale(0.98); filter: blur(6px); }
   to { opacity: 1; transform: none; filter: none; }
 }
 
+/* Line colours. Each has an "ink" for text drawn on top of it; every pair passes 4.5:1. */
+:root {
+  --line-1: #0071e3; --line-1-ink: #fff;
+  --line-2: #1f8a3d; --line-2-ink: #fff;
+  --line-3: #f59e0b; --line-3-ink: #1d1d1f;
+  --line-4: #d70f2a; --line-4-ink: #fff;
+  --line-5: #0a7f92; --line-5-ink: #fff;
+  --station: #fff;
+  --paper-dot: rgb(0 0 0 / 0.075);
+}
+.dark {
+  --line-1: #0a84ff; --line-1-ink: #00152b;
+  --line-2: #30d158; --line-2-ink: #0b2b14;
+  --line-3: #ffb340; --line-3-ink: #1d1d1f;
+  --line-4: #ff453a; --line-4-ink: #1d1d1f;
+  --line-5: #40c8e0; --line-5-ink: #062a31;
+  --station: #1c1c1e;
+  --paper-dot: rgb(255 255 255 / 0.09);
+}
+
 html {
   -webkit-text-size-adjust: 100%;
+  scrollbar-color: var(--color-zinc-300) transparent;
+  accent-color: var(--color-sky-600);
   font-size: 100%;
   font-feature-settings: "cv11", "ss01", "ss03";
   /* Ease the switch between light and dark instead of an abrupt brightness jump. */
@@ -86,7 +134,10 @@ h1 { line-height: 1.08; }
 h2 { line-height: 1.15; }
 small, .text-xs, .text-\[11px\], .text-\[12px\] { letter-spacing: 0; }
 
-::selection { background: rgb(0 113 227 / 0.25); }
+::selection { background: rgb(0 113 227 / 0.22); }
+.dark ::selection { background: rgb(10 132 255 / 0.4); }
+.dark { scrollbar-color: var(--color-zinc-700) transparent; }
+input, textarea, .cm-content { caret-color: var(--color-sky-600); }
 
 code, kbd, pre { font-family: var(--font-mono); letter-spacing: 0; }
 
@@ -115,6 +166,20 @@ code, kbd, pre { font-family: var(--font-mono); letter-spacing: 0; }
   @apply rounded-2xl bg-zinc-50 dark:bg-white/[0.04];
 }
 
+/* Map paper: a faint dot grid, faded out at the edges. Only behind maps, never behind reading. */
+@utility map-paper {
+  background-image: radial-gradient(circle at 1px 1px, var(--paper-dot) 1px, transparent 0);
+  background-size: 22px 22px;
+  mask-image: radial-gradient(ellipse 75% 70% at 50% 45%, #000 40%, transparent 100%);
+}
+/* A line badge: the line's number in a rounded tile, the way metro lines are signed. */
+@utility line-badge {
+  @apply inline-grid shrink-0 place-items-center rounded-[0.45em] font-display font-extrabold tabular-nums;
+  background: var(--lc);
+  color: var(--lc-ink);
+  padding-top: 0.08em;
+}
+
 /* ───────────── controls ───────────── */
 
 @utility btn {
@@ -130,7 +195,7 @@ code, kbd, pre { font-family: var(--font-mono); letter-spacing: 0; }
   @apply btn text-sky-700 hover:bg-sky-600/[0.08] dark:text-sky-400 dark:hover:bg-sky-400/[0.1];
 }
 @utility btn-visualize {
-  @apply btn bg-violet-500/[0.12] text-violet-700 hover:bg-violet-500/[0.18] dark:text-[#d99cf5];
+  @apply btn bg-teal-500/[0.12] text-teal-700 hover:bg-teal-500/[0.18] dark:bg-teal-400/[0.14] dark:text-teal-400 dark:hover:bg-teal-400/[0.2];
 }
 /* A text link with a chevron: Apple's "Learn more ›". */
 @utility link {
@@ -142,12 +207,9 @@ code, kbd, pre { font-family: var(--font-mono); letter-spacing: 0; }
 @utility kbd {
   @apply rounded-md bg-black/[0.06] px-1.5 py-px font-mono text-[10px] text-zinc-500 dark:bg-white/[0.1] dark:text-zinc-400;
 }
-/* The small line above a title (Apple uses a short, coloured, semibold label, not shouting caps). */
-@utility eyebrow {
-  @apply text-[13px] leading-5 font-semibold tracking-[-0.005em] text-sky-700 dark:text-sky-400;
-}
-@utility text-gradient {
-  @apply bg-linear-to-r from-sky-600 to-violet-600 bg-clip-text text-transparent dark:from-sky-400 dark:to-violet-500;
+/* A small neutral label for a group (sidebar box, sub-section). Never a kicker above a page title. */
+@utility label {
+  @apply text-[13px] leading-5 font-semibold tracking-[-0.005em] text-zinc-500;
 }
 @utility field {
   @apply rounded-xl bg-white px-3 py-2 text-[15px] ring-1 ring-black/[0.1] transition-shadow outline-none focus:ring-4 focus:ring-sky-600/25 dark:bg-zinc-800 dark:ring-white/[0.1];
@@ -206,10 +268,41 @@ code, kbd, pre { font-family: var(--font-mono); letter-spacing: 0; }
 .cm-editor { background: transparent !important; }
 .cm-editor.cm-focused { outline: none !important; }
 
+/* ───────────── the map ───────────── */
+
+.metro-line { stroke-dasharray: 1 2; }
+.metro-animate .metro-line { animation: draw var(--dur, 560ms) var(--ease-in-out) both; animation-delay: var(--d, 0ms); }
+.metro-animate .metro-station { animation: station-in 280ms var(--ease-out) both; animation-delay: var(--d, 0ms); }
+.metro-animate .metro-label { animation: label-in 320ms var(--ease-out) both; animation-delay: calc(var(--d, 0ms) + 60ms); }
+.metro-animate .metro-fade { animation: fade-up 420ms var(--ease-out) both; animation-delay: var(--d, 0ms); }
+.here-ring { animation: here 1.8s var(--ease-out) infinite; }
+
+/* Each station carries its own view-transition name (inline --vt) so it can morph into the
+   station badge on the topic page. Only one element per page may hold a name, so the map
+   copy holds it on wide screens and the line-board copy on narrow ones. */
+.vt-station { view-transition-name: var(--vt); }
+@media (min-width: 1024px) { .vt-station-sm { view-transition-name: none; } }
+@media (max-width: 1023.98px) { .vt-station-lg { view-transition-name: none; } }
+
+/* ───────────── page transitions (View Transitions API; other browsers just swap) ───────────── */
+
+::view-transition-old(root) { animation: 150ms var(--ease-out) both vt-out; }
+::view-transition-new(root) { animation: 260ms var(--ease-out) 40ms both vt-in; }
+::view-transition-group(*) { animation-duration: 420ms; animation-timing-function: var(--ease-in-out); }
+@keyframes vt-out { to { opacity: 0; } }
+@keyframes vt-in { from { opacity: 0; transform: translateY(8px); } }
+/* The header stays put while the page changes under it. */
+.site-header { view-transition-name: site-header; }
+::view-transition-group(site-header) { animation: none; }
+::view-transition-old(site-header) { display: none; }
+::view-transition-new(site-header) { animation: none; }
+
 /* ───────────── accessibility and print ───────────── */
 
 /* Reduced motion: gentle cross-fades instead of movement, no overshoot. */
 @media (prefers-reduced-motion: reduce) {
+  .here-ring { animation: none; opacity: 0; }
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
 }
 /* Reduced transparency: frosted chrome becomes solid. */

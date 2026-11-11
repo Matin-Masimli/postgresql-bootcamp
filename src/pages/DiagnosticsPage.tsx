@@ -61,7 +61,6 @@ export default function DiagnosticsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow={t('diag.eyebrow')}
         title={t('diag.title')}
         intro={t('diag.intro')}
         actions={<button type="button" onClick={run} disabled={running} className="btn-primary px-4 py-2">{running ? t('diag.measuring') : t('diag.measureAgain')}</button>}
